@@ -31,6 +31,7 @@
 #include "goptical/core/common.hpp"
 
 #include "goptical/core/data/set1d.hpp"
+#include "goptical/core/data/set1d.hxx"
 #include "data_interpolate_1d.hpp"
 
 namespace _goptical {

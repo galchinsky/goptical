@@ -66,23 +66,6 @@ namespace _goptical {
     }
 
     template <class X>
-    inline void Container::get_elements(const std::function<void (X &)> &d)
-    {
-      for(auto* i : _list)
-        {
-          X     *e;
-
-          if ((e = dynamic_cast<X*>(i->ptr())))
-            d(*e);
-
-          Container *g;
-
-          if ((g = dynamic_cast<Container*>(i->ptr())))
-            g->get_elements<X>(d);
-        }
-    }
-
-    template <class X>
     inline void Container::enable_single(const X &e_)
     {
       for(auto& i : _list)

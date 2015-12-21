@@ -29,6 +29,7 @@
 #include "goptical/core/common.hpp"
 
 #include "goptical/core/data/discrete_set.hpp"
+#include "goptical/core/data/discrete_set.hxx"
 #include "goptical/core/material/solid.hpp"
 #include "goptical/core/light/spectral_line.hpp"
 

@@ -71,11 +71,6 @@ namespace _goptical {
       template <class X>
       inline void get_elements(const std::function<void (const X &)> &d) const;
 
-      /** Invoke a modifier delegate for each element of type X in
-          container and subcontainers */
-      template <class X>
-      inline void get_elements(const std::function<void (X &)> &d);
-
       /** Disable all elements of specified type which are not specified element */
       template <class X>
       inline void enable_single(const X &e);
