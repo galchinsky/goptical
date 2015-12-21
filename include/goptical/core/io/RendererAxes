@@ -1,0 +1,9 @@
+
+#include "goptical/core/io/renderer_axes.hpp"
+#include "goptical/core/io/renderer_axes.hxx"
+
+namespace goptical {
+  namespace io {
+    using _goptical::io::RendererAxes;
+  }
+}

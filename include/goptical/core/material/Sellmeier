@@ -1,0 +1,10 @@
+
+#include "goptical/core/material/sellmeier.hpp"
+#include "goptical/core/material/sellmeier.hxx"
+
+namespace goptical {
+  namespace material {
+    using _goptical::material::Sellmeier;
+  }
+}
+

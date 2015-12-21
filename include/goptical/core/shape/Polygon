@@ -1,0 +1,10 @@
+
+#include "goptical/core/shape/polygon.hpp"
+#include "goptical/core/shape/polygon.hxx"
+
+namespace goptical {
+  namespace shape {
+    using _goptical::shape::Polygon;
+  }
+}
+

@@ -1,0 +1,235 @@
+/* -*- c++ -*-
+
+   Formatted string class
+
+   This file is part of the dpp library of C++ template classes
+
+   doc: http://diaxen.ssji.net/dpp/index.html
+   repo: https://www.ssji.net/svn/projets/trunk/libdpp
+
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+   (c) 2008-2011 Alexandre Becoulet <alexandre.becoulet@free.fr>
+
+*/
+
+#ifndef DPP_FSTRING_HH_
+#define DPP_FSTRING_HH_
+
+#include <stdarg.h>
+#include <stdio.h>
+
+#include <string>
+
+/** @file @module{Formatted string} */
+
+#ifdef __GNUC__
+# define _DPP_FORMAT_CHK(archetype, string_index, first_to_check)
+#else
+# define _DPP_FORMAT_CHK(archetype, string_index, first_to_check) \
+  __attribute__((format(archetype, string_index, first_to_check)))
+#endif
+
+namespace dpp {
+
+  /**
+     @short Extended std::string with sprintf family of functions.
+     @module {Formatted string}
+     @header dpp/fstring
+     @main
+
+     This class provides an extension of the @ref std::string class
+     with @ref sprintf family of functions and constructors,
+     for those who find @ref std::ostringstream sometimes cumbersome
+     to use. Yes, I know, it's not type safe.
+
+     Allocation is performed by underlying @ref std::string class and
+     format string are processed using the @ref ::vsnprintf libc function
+     with proper buffer size.
+   */
+  class fstring : public std::string
+  {
+  public:
+    /** @multiple @ref std::string standard constructor */
+    fstring()
+      : std::string()
+    {
+    }
+
+    explicit fstring(const std::string &str)
+      : std::string(str)
+    {
+    }
+
+    /** @This creates a @ref fstring object from char array. Unlike
+	the @insert {__fstring2__} prototype constructor, @this does
+	not perform formatting; initialization with buffer containing
+	conversion specifiers is safe to use. */
+    fstring(const char *str)
+      : std::string(str)
+    {
+    }
+
+#ifdef __MKDOC__
+    /** @This creates a @ref fstring object from format string and
+	associated arguments. Up to 16 extra arguments can be passed.
+	@alias fstring2
+    */
+    fstring(const char *str, ...);
+
+#else // mkdoc:skip
+
+#define _DPP_FSTRING_CSTR(b, c, ...)					\
+    _DPP_FORMAT_CHK(printf, 1, 2)					\
+    template <__VA_ARGS__>						\
+    fstring b								\
+    {									\
+      dpp::fstring::sprintf c;						\
+    }
+
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0),
+       (fmt, a0),
+       typename A0)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1),
+       (fmt, a0, a1),
+       typename A0, typename A1)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2),
+       (fmt, a0, a1, a2),
+       typename A0, typename A1, typename A2)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3),
+       (fmt, a0, a1, a2, a3),
+       typename A0, typename A1, typename A2, typename A3)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4),
+       (fmt, a0, a1, a2, a3, a4),
+       typename A0, typename A1, typename A2, typename A3, typename A4)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5),
+       (fmt, a0, a1, a2, a3, a4, a5),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6),
+       (fmt, a0, a1, a2, a3, a4, a5, a6),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9, const A10 &a10),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9, typename A10)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9, const A10 &a10, const A11 &a11),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9, typename A10, typename A11)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9, const A10 &a10, const A11 &a11, const A12 &a12),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9, typename A10, typename A11, typename A12)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9, const A10 &a10, const A11 &a11, const A12 &a12, const A13 &a13),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9, typename A10, typename A11, typename A12, typename A13)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9, const A10 &a10, const A11 &a11, const A12 &a12, const A13 &a13, const A14 &a14),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9, typename A10, typename A11, typename A12, typename A13, typename A14)
+    _DPP_FSTRING_CSTR((const char *fmt, const A0 &a0, const A1 &a1, const A2 &a2, const A3 &a3, const A4 &a4, const A5 &a5, const A6 &a6, const A7 &a7, const A8 &a8, const A9 &a9, const A10 &a10, const A11 &a11, const A12 &a12, const A13 &a13, const A14 &a14, const A15 &a15),
+       (fmt, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15),
+       typename A0, typename A1, typename A2, typename A3, typename A4, typename A5, typename A6, typename A7, typename A8, typename A9, typename A10, typename A11, typename A12, typename A13, typename A14, typename A15)
+#endif
+
+    /** @This preallocates a string of given size and creates a @ref
+	fstring from format string and associated arguments. */
+    _DPP_FORMAT_CHK(printf, 1, 3)
+    fstring(size_t size, const char *fmt, ...)
+    {
+      va_list ap;
+      va_start(ap, fmt);
+      dpp::fstring::vsnprintf(size, fmt, ap);
+      va_end(ap);
+    }
+
+    /** @This overwrites current content using format string and
+	associated arguments. */
+    int vsprintf(const char *fmt, va_list ap)
+    {
+      int s;
+      va_list aq;
+
+      va_copy(aq, ap);
+      if (empty())
+        s = ::vsnprintf(NULL, 0, fmt, aq);
+      else
+        s = ::vsnprintf(&at(0), size() + 1, fmt, aq);
+
+      if (s >= 0 && s > (int)size())
+	{
+	  resize(s);
+	  s = ::vsnprintf(&at(0), size() + 1, fmt, ap);
+	}
+
+      va_end(aq);
+      return s;
+    }
+
+    /** @This resizes current buffer and overwrite its content
+	using format string and associated arguments. */
+    int vsnprintf(size_t size, const char *fmt, va_list ap)
+    {
+      resize(size);
+      return ::vsnprintf(&at(0), size + 1, fmt, ap);
+    }
+
+    /** @This overwrites current content using format string and
+	associated arguments. */
+    _DPP_FORMAT_CHK(printf, 1, 2)
+    int sprintf(const char *fmt, ...)
+    {
+      va_list ap;
+      int res;
+      va_start(ap, fmt);
+      res = dpp::fstring::vsprintf(fmt, ap);
+      va_end(ap);
+      return res;
+    }
+
+    /** @This resizes current buffer and overwrite its content
+	using format string and associated arguments. */
+    _DPP_FORMAT_CHK(printf, 1, 3)
+    int snprintf(size_t size, const char *fmt, ...)
+    {
+      va_list ap;
+      int res;
+      va_start(ap, fmt);
+      res = dpp::fstring::vsnprintf(size, fmt, ap);
+      va_end(ap);
+      return res;
+    }
+
+    /** @This returns the buffer content as a @tt{const char *}. @see c_str */
+    operator const char *() {
+      return c_str();
+    }
+
+    /** @This returns the buffer content as a @tt{const char *}. @see c_str */
+    const char * operator+() {
+      return c_str();
+    }
+
+  };
+
+}
+
+#endif
+

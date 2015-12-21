@@ -1,0 +1,10 @@
+
+#include "goptical/core/shape/disk.hpp"
+#include "goptical/core/shape/disk.hxx"
+
+namespace goptical {
+  namespace shape {
+    using _goptical::shape::Disk;
+  }
+}
+

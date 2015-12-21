@@ -1,0 +1,49 @@
+
+@section TP {Conventions}
+
+  @section T {Coordinates system}
+    Each optical element in <goptical/core lives in its own coordinates
+    system. It's usually located at @em{(0, 0, 0)} with the @em Z axis
+    being the local optical axis.
+
+    @image coordinates.png
+  @end section
+
+  @section T {Measurement units}
+    @list
+      @item Lengths are expressed using millimeter unit.
+      @item Wavelengths are expressed in nanometer unit in vacuum.
+      @item Absolute refractive indexes are used, with 1 being the
+        refractive index of vacuum.
+    @end list
+  @end section
+
+  @section T {Object references}
+    C++ objects are used to model optical elements, materials,
+    curvatures, shapes and other kinds of object <goptical/core deals
+    with. As the optical system is being built, some objects keep
+    references to other objects.
+
+    The @ref dpp::ref smart pointer class is used to manage objects in a
+    convenient way. Objects can either be statically allocated or
+    dynamically allocated. Both can then be passed to reference holder
+    objects in the same way but only dynamically allocated objects
+    will be automatically deleted when not used anymore:
+
+    @code {<goptical/core}
+  using namespace goptical;
+
+  sys::system     sys;
+
+  // statically allocated object added to the system
+  sys::SourceRays src1(math::vector3_0);
+  sys.add(src1);
+
+  // dynamically allocated object added to the system
+  ref<sys::SourceRays> src2 = ref<sys::SourceRays>::create(math::vector3_0);
+  sys.add(src2);
+    @end code
+  @end section
+
+@end section
+

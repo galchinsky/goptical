@@ -1,0 +1,468 @@
+/* -*- c++ -*-
+
+   C++ Indexable objects pool
+
+   This file is part of the dpp library of C++ template classes
+
+   doc: http://diaxen.ssji.net/dpp/index.html
+   repo: https://www.ssji.net/svn/projets/trunk/libdpp
+
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+   (c) 2010 Alexandre Becoulet <alexandre.becoulet@free.fr>
+
+*/
+
+#ifndef DPP_VECTOR_POOL_HH_
+#define DPP_VECTOR_POOL_HH_
+
+#include <stdexcept>
+#include <memory>
+#include <vector>
+
+/** @file @module{Vector pool} */
+
+namespace dpp {
+
+  template <class X, unsigned int block_size = 32,
+            class Allocator = std::allocator<X>,
+	    class PtrAllocator = std::allocator<X*> >
+  class vector_pool;
+
+  /** @short Vector pool iterator class
+      @module {Vector pool}
+      @header dpp/vector_pool
+      @internal
+
+      @This contains the iterator implementation for the @ref
+      vector_pool class.
+   */
+  template <typename P, typename E, int direction>         /* FIXME rework iterator (more ops, copy, const, ...) */
+  class vector_pool_iterator
+  {
+    P &_pool;
+    unsigned int _i;
+
+  public:
+
+    typedef std::bidirectional_iterator_tag iterator_category;
+
+    inline vector_pool_iterator (P & pool, unsigned int i)
+      : _pool(pool),
+	_i(i)
+    {
+    }
+
+    inline E & operator*()
+    {
+      return _pool[_i];
+    }
+
+    inline E * operator->()
+    {
+      return &_pool[_i];
+    }
+
+    inline vector_pool_iterator & operator++()
+    {
+      _i += direction;
+      return *this;
+    }
+
+    inline vector_pool_iterator operator++(int)
+    {
+      vector_pool_iterator tmp(*this);
+      _i += direction;
+      return tmp;
+    }
+
+    inline vector_pool_iterator & operator--()
+    {
+      _i -= direction;
+      return *this;
+    }
+
+    inline vector_pool_iterator operator--(int)
+    {
+      vector_pool_iterator tmp(*this);
+      _i -= direction;
+      return tmp;
+    }
+
+    inline bool operator==(const vector_pool_iterator<P, E, direction> &i)
+    {
+      return _i == i._i;
+    }
+
+    inline bool operator!=(const vector_pool_iterator<P, E, direction> &i)
+    {
+      return _i != i._i;
+    }
+  };
+
+
+  /** @short Indexable allocation pool
+      @module {Vector pool}
+      @header dpp/vector_pool
+      @main
+      @showvalue
+
+      This class provides an indexable object allocation pool.  The
+      pool can be accessed and traversed like a @ref std::vector.
+      Only the last or all objects in pool can be removed at once.
+
+      The @ref create functions must be used to allocate and construct
+      objects in pool. Unlike @ref std::vector this class does not
+      require assignment operator to be available in the object class.
+
+      The pool allocates storage blocks for multiple objects at once.
+      The number of objects in a storage block can be specified as
+      template parameter. Moreover a static storage space can be
+      provided for first storage blocks when creating the pool.
+
+      Unlike @ref std::vector, iterators and pointers to objects in
+      the pool are not invalidated by allocation and elements in the
+      pool are not stored at contiguous locations when crossing the @tt
+      block_size boundary.
+
+      The @tt Allocator and @tt PtrAllocator standard allocators
+      parameters are used to allocate objects and manage vector of
+      storage blocks respectively.
+  */
+  template <class X, unsigned int block_size,
+	    class Allocator, class PtrAllocator>
+  class vector_pool
+  {
+    vector_pool(const vector_pool &);
+    const vector_pool & operator= (const vector_pool &);
+
+    typedef std::vector<X *, PtrAllocator> block_list_t;
+
+    block_list_t	_blocks;
+    size_t		_free_count;
+    size_t		_static_size;
+    Allocator		_allocator;
+
+    inline X * get_ptr(unsigned int i) const
+    {
+      return _blocks[i / block_size] + i % block_size;
+    }
+
+    inline X *alloc()
+    {
+      if (_free_count == 0)
+	add_block();
+
+      unsigned int id = _blocks.size() * block_size - _free_count--;
+
+      return get_ptr(id);
+    }
+
+    void add_block()
+    {
+      const void *hint = _blocks.empty() ? 0 : (const void*)_blocks.front();
+      X *b = (X*)_allocator.allocate(block_size, hint);
+
+      _free_count += block_size;
+      _blocks.push_back(b);
+    }
+
+  public:
+
+    typedef X value_type;
+    typedef X & reference;
+    typedef const X & const_reference;
+    typedef X * pointer;
+    typedef const X * const_pointer;
+    typedef unsigned int size_type;
+    typedef int difference_type;
+    typedef Allocator allocator_type;
+
+    typedef vector_pool_iterator<vector_pool<X, block_size>, X, 1 > iterator;
+    typedef vector_pool_iterator<const vector_pool<X, block_size>, const X, 1 > const_iterator;
+    typedef vector_pool_iterator<vector_pool<X, block_size>, X, -1 > reverse_iterator;
+    typedef vector_pool_iterator<const vector_pool<X, block_size>, const X, -1 > const_reverse_iterator;
+
+    /** Storage space for a single block of objects in pool */
+    typedef unsigned char block_type[sizeof(X) * block_size];
+
+    /** @This creates a new pool with empty storage. */
+    inline vector_pool(const Allocator &a = Allocator(),
+		       const PtrAllocator &pa = PtrAllocator())
+      : _blocks(pa),
+	_free_count(0),
+	_static_size(0),
+	_allocator(a)
+    {
+    }
+
+    /** @This creates a new pool and provide static storage space for
+	the first block. */
+    inline vector_pool(block_type &first,
+		       const Allocator &a = Allocator(),
+		       const PtrAllocator &pa = PtrAllocator())
+      : _blocks(pa),
+	_free_count(block_size),
+	_static_size(1),
+	_allocator(a)
+    {
+      _blocks.push_back((X*)first);
+    }
+
+    /** @This creates a new pool and provide static storage space for
+	multiple blocks. */
+    inline vector_pool(block_type block[], size_t count,
+		       const Allocator &a = Allocator(),
+		       const PtrAllocator &pa = PtrAllocator())
+      : _blocks(pa),
+	_free_count(block_size * count),
+	_static_size(count),
+	_allocator(a)
+    {
+      for (unsigned int i = 0; i < count; i++)
+	_blocks.push_back((X*)block[i]);
+    }
+
+    /** @This destroy pool along with contained objects */
+    ~vector_pool()
+    {
+      clear();
+      shrink();
+    }
+
+    /** @This returns reference to object at given position in pool */
+    inline const X & operator[](unsigned int i) const
+    {
+      return *get_ptr(i);
+    }
+
+    /** @This returns reference to object at given position in pool */
+    inline X & operator[](unsigned int i)
+    {
+      return *get_ptr(i);
+    }
+
+    /** @This returns reference to object at given position in pool
+	with bound checking */
+    inline const X & at(unsigned int i) const throw (std::out_of_range)
+    {
+      if (i >= size())
+	throw std::out_of_range("vector_pool access out of bounds");
+      return *get_ptr(i);
+    }
+
+    /** @This returns reference to object at given position in pool
+	with bound checking */
+    inline X & at(unsigned int i) throw (std::out_of_range)
+    {
+      if (i >= size())
+	throw std::out_of_range("vector_pool access out of bounds");
+      return *get_ptr(i);
+    }
+
+    /** @This allocates and construct a new object in pool */
+    inline X &create()
+    {
+      return *new(alloc())X();
+    }
+
+    /** @This allocates and construct a new object in pool. Parameter
+	is passed to constructor. */
+    template <typename P1>
+    inline X &create(const P1 &p1)
+    {
+      return *new(alloc())X(p1);
+    }
+
+    /** @multiple
+	@This allocates and construct a new object in pool. Parameters
+	are passed to constructor. */
+    template <typename P1, typename P2>
+    inline X &create(const P1 &p1, const P2 &p2)
+    {
+      return *new(alloc())X(p1, p2);
+    }
+
+    template <typename P1, typename P2, typename P3>
+    inline X &create(const P1 &p1, const P2 &p2, const P3 &p3)
+    {
+      return *new(alloc())X(p1, p2, p3);
+    }
+
+    template <typename P1, typename P2, typename P3, typename P4>
+    inline X &create(const P1 &p1, const P2 &p2, const P3 &p3, const P4 &p4)
+    {
+      return *new(alloc())X(p1, p2, p3, p4);
+    }
+
+    template <typename P1, typename P2, typename P3, typename P4, typename P5>
+    inline X &create(const P1 &p1, const P2 &p2, const P3 &p3,
+		     const P4 &p4, const P5 &p5)
+    {
+      return *new(alloc())X(p1, p2, p3, p4, p5);
+    }
+
+    template <typename P1, typename P2, typename P3,
+	      typename P4, typename P5, typename P6>
+    inline X &create(const P1 &p1, const P2 &p2, const P3 &p3,
+		     const P4 &p4, const P5 &p5, const P6 &p6)
+    {
+      return *new(alloc())X(p1, p2, p3, p4, p5, p6);
+    }
+
+    /** @This removes last entry. It does not reduce
+	allocated blocks count. @see shrink */
+    void pop_back()
+    {
+      unsigned int id = _blocks.size() * block_size - ++_free_count;
+
+      get_ptr(id)->~X();
+    }
+
+    /** @This destroys all objects in pool. It does not reduce
+	allocated blocks count. @see shrink */
+    void clear()
+    {
+      int i;
+      unsigned int j;
+
+      for (i = _blocks.size() - 1; i >= 0; i--)
+	{
+	  for (j = 0; j < block_size - _free_count % block_size; j++)
+	    _blocks[i][j].~X();
+	  _free_count += j;
+	}
+    }
+
+    /** @This frees unused storage blocks at end of pool. */
+    void shrink()
+    {
+      while (_blocks.size() > _static_size)
+	{
+	  _allocator.deallocate(_blocks.back(), block_size);
+	  _blocks.pop_back();
+	  _free_count -= block_size;
+	}
+    }
+
+    /** @This allocates enough storage blocks to hold at least @tt
+	count objects */
+    void reserve(size_t count)
+    {
+      while (capacity() < count)
+	add_block();
+    }
+
+    /** @This returns current live objects count in pool */
+    inline size_t size() const
+    {
+      return _blocks.size() * block_size - _free_count;
+    }
+
+    /** @This returns current allocated storage space in objects count unit */
+    inline size_t capacity() const
+    {
+      return _blocks.size() * block_size;
+    }
+
+    /** @This tests pool empty state */
+    inline bool empty() const
+    {
+      return size() == 0;
+    }
+
+    /** @This returns first object in pool */
+    inline const X & front() const
+    {
+      return *_blocks.front();
+    }
+
+    /** @This returns first object in pool */
+    inline X & front()
+    {
+      return *_blocks.front();
+    }
+
+    /** @This returns last object in pool */
+    inline const X & back() const
+    {
+      return *get_ptr(size() - 1);
+    }
+
+    /** @This returns last object in pool */
+    inline X & back()
+    {
+      return *get_ptr(size() - 1);
+    }
+
+    /** @This returns @ref iterator to first object in pool */
+    inline iterator begin()
+    {
+      return iterator(*this, 0);
+    }
+
+    /** @This returns end @ref iterator */
+    inline iterator end()
+    {
+      return iterator(*this, size());
+    }
+
+    /** @This returns @ref const_iterator to first object in pool */
+    inline const_iterator begin() const
+    {
+      return const_iterator(*this, 0);	
+    }
+
+    /** @This returns end @ref const_iterator */
+    inline const_iterator end() const
+    {
+      return const_iterator(*this, size());
+    }
+
+    /** @This returns @ref reverse_iterator to last object in pool */
+    inline reverse_iterator rbegin()
+    {
+      return reverse_iterator(*this, size() - 1);
+    }
+
+    /** @This returns end @ref reverse_iterator */
+    inline reverse_iterator rend()
+    {
+      return reverse_iterator(*this, -1);
+    }
+
+    /** @This returns @ref const_reverse_iterator to first object in pool */
+    inline const_reverse_iterator rbegin() const
+    {
+      return const_reverse_iterator(*this, size() - 1);
+    }
+
+    /** @This returns end @ref const_reverse_iterator */
+    inline const_reverse_iterator rend() const
+    {
+      return const_reverse_iterator(*this, -1);
+    }
+
+    /** @This returns pool object allocator */
+    const allocator_type & get_allocator() const
+    {
+      return _allocator;
+    }
+  };
+
+}
+
+#endif
+

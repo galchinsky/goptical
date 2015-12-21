@@ -1,0 +1,10 @@
+
+#include "goptical/core/data/plotdata.hpp"
+#include "goptical/core/data/plotdata.hxx"
+
+namespace goptical {
+  namespace data {
+    using _goptical::data::Plotdata;
+  }
+}
+

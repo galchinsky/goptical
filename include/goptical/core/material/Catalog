@@ -1,0 +1,10 @@
+
+#include "goptical/core/material/catalog.hpp"
+#include "goptical/core/material/catalog.hxx"
+
+namespace goptical {
+  namespace material {
+    using _goptical::material::Catalog;
+  }
+}
+

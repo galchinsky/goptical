@@ -1,0 +1,10 @@
+
+#include "goptical/core/sys/source_rays.hpp"
+#include "goptical/core/sys/source_rays.hxx"
+
+namespace goptical {
+  namespace sys {
+    using _goptical::sys::SourceRays;
+  }
+}
+

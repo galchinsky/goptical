@@ -1,0 +1,9 @@
+
+#include "goptical/core/io/renderer.hpp"
+#include "goptical/core/io/renderer.hxx"
+
+namespace goptical {
+  namespace io {
+    using _goptical::io::Renderer;
+  }
+}

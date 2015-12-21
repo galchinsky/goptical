@@ -1,0 +1,11 @@
+
+#include "base.hpp"
+#include "base.hxx"
+
+namespace goptical {
+  namespace material {
+    using _goptical::material::Base;
+    using _goptical::material::none;
+  }
+}
+

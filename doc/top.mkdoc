@@ -1,0 +1,68 @@
+@c Copyright (C) 2010 Free Software Foundation, Inc. Permission is
+@c granted to copy, distribute and/or modify this document under the
+@c terms of the GNU Free Documentation License, Version 1.3 or any later
+@c version published by the Free Software Foundation; with no Invariant
+@c Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the
+@c license is included in the section entitled GNU Free Documentation
+@c License.
+
+@scope {<goptical/core}
+
+@include modules.mkdoc
+@include template.mkdoc
+@include headers.mkdoc
+
+@ifnopt doc_format {texinfo}
+  @insert title
+@end ifopt
+
+@ifopt doc_format {html}
+  Copyright (C) 2009-2011 Free Software Foundation . Permission is granted to copy,
+  distribute and/or modify this document under the terms of the GNU Free
+  Documentation License, Version 1.3 or any later version published by
+  the Free Software Foundation; with no Invariant Sections, no
+  Front-Cover Texts, and no Back-Cover Texts. A copy of the license is
+  included in the section entitled @xref{GNU Free Documentation License}.
+
+  @section HP {Table of contents}
+    @insert toc
+  @end section
+@end ifopt
+
+@include intro.mkdoc
+
+@include conventions.mkdoc
+
+@include tutorial.mkdoc
+
+@section TP {API documentation}
+
+  @section T {Modules}
+    @insert {module} compound_table
+  @end section
+
+  @section T {Namespaces list}
+    @insert {namespace} {1} {<goptical/core} compound_table
+  @end section
+
+  @section T {Classes list}
+    @insert {!internal class,cxxstruct} {0} {<goptical/core} compound_table
+
+    @ifnopt hide_internal
+      @section {Internal classes}
+        @insert {internal class,cxxstruct} {0} {<goptical/core} compound_table
+      @end section
+    @end if
+  @end section
+
+  @section THP {Main classes}
+    @insert {main class,cxxstruct,typedef} {namespace} {0} {<goptical/core} grouped_compound_table
+  @end section
+
+  @insert {module,namespace,class,cxxstruct} all_compound_sections
+@end section
+
+@section TP {GNU Free Documentation License}
+  @include fdl-1.3.mkdoc
+@end section
+

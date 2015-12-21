@@ -1,0 +1,10 @@
+
+#include "goptical/core/curve/conic_base.hpp"
+#include "goptical/core/curve/conic_base.hxx"
+
+namespace goptical {
+  namespace curve {
+    using _goptical::curve::ConicBase;
+  }
+}
+

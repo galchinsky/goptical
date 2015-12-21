@@ -1,0 +1,801 @@
+/* -*- c++ -*-
+
+   C++ smart pointer classes
+
+   This file is part of the dpp library of C++ template classes
+
+   doc: http://diaxen.ssji.net/dpp/index.html
+   repo: https://www.ssji.net/svn/projets/trunk/libdpp
+
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+   (c) 2008-2011 Alexandre Becoulet <alexandre.becoulet@free.fr>
+
+*/
+
+#ifndef DPP_REFS_HH_
+#define DPP_REFS_HH_
+
+#include <cassert>
+#include <cstdlib>
+#include <typeinfo>
+
+/** @file @module{Smart pointer} */
+
+// #define _DPP_USE_GCC_ATOMIC
+
+namespace dpp {
+
+  template <class X> class ref;
+  template <class X> class const_ref;
+  template <class X> class clone_ref;
+  template <class X, bool clonable> class ref_base;
+
+  /** @internal 
+      @module{Smart pointer}
+  */
+  template <class X, /* object type with optional constness */
+	    class Xnoconst /* bare object type */ >
+  class ref_
+  {
+    template <class, class> friend class ref_;
+    template <class> friend class ref;
+    template <class> friend class const_ref;
+    template <class> friend class clone_ref;
+
+/** @deprecated
+    Dynamically allocate and construct object of given type with passed
+    constructor arguments.
+*/
+#define DPP_REFNEW(type, ...)			\
+    (dpp::ref<type>::create(__VA_ARGS__))
+
+  public:
+    /** @This set the internal pointer to 0. */
+    void invalidate()
+    {
+      if (_obj)
+	_drop();
+      _obj = 0;
+    }
+
+    /** @This tests if @ref ref points to a valid object. */
+    bool valid() const
+    {
+      return _obj != 0;
+    }
+
+    X & operator*() const
+    {
+      assert(_obj);
+      return *_obj;
+    }
+
+    X * operator->() const
+    {
+      assert(_obj);
+      return _obj;
+    }
+
+    /** @This returns ref internal object pointer */
+    X * ptr() const
+    {
+      return _obj;
+    }
+
+    /** @This returns object references count */
+    int count() const
+    {
+      return _obj ? _obj->_ref_count : 0;
+    }
+
+    /** @This tests if pointed objects are the same */
+    bool operator==(const ref_ &r) const
+    {
+      return _obj == r._obj;
+    }
+
+    /** @This tests if pointed objects are not the same */
+    bool operator!=(const ref_ &r) const
+    {
+      return _obj != r._obj;
+    }
+
+    /** @This tests if pointed objects are the same */
+    bool operator==(const X *p) const
+    {
+      return _obj == p;
+    }
+
+    /** @This tests if pointed objects are the same */
+    bool operator!=(const X *p) const
+    {
+      return _obj != p;
+    }
+
+    /** @This returns a @ref ref to a new dynamically allocated copy
+	of object. Object is deep copyed, new object has the same
+	derived type as source object.
+
+	While this is not need for objects dynamically allocated with
+	the @ref ref::create function, other objects have to call the
+	@ref ref_base::set_clone function from their constructor to
+	make the @ref clone function work.
+
+	The @ref clone_ref class can be used for automatic cloning on
+	smart pointer copy.
+
+	@example test/test_ref.cc:clone
+    */
+    ref<Xnoconst> clone() const
+    {
+      if (!_obj)
+	return ref<Xnoconst>();
+      return ref<Xnoconst>(_obj->template _clone<Xnoconst>());
+    }
+
+  private:
+
+    /** @internal */
+    void assign(const X &r)
+    {
+      if (_obj)
+	_drop();
+      _obj = &r;
+      if (_obj)
+	_inc();
+    }
+
+    /** @internal */
+    void assign(const ref_ &r)
+    {
+      if (_obj)
+	_drop();
+      _obj = r._obj;
+      if (_obj)
+	_inc();
+    }
+
+    /** @internal */
+    void _inc() const
+    {
+      _obj->ref_inc();
+    }
+
+    /** @internal */
+    void _drop() const
+    {
+      _obj->ref_drop();
+    }
+
+    /** @internal */
+    X *_obj;
+  };
+
+
+  /** 
+      @short Smart pointer class
+      @module{Smart pointer}
+      @header dpp/ref
+      @main
+      @order 3
+
+      @This implements an object reference class, it may hold a
+      reference to objects of type @tt X which inherit from the @ref
+      ref_base class.
+
+      This class can hold references to both statically and
+      dynamically allocated objects. When the object has been
+      dynamically allocated using the @ref create function, it will be
+      destroyed when the last reference to the object is dropped.
+
+      @see {const_ref, ref_base}
+  */
+  template <class X>
+  class ref : public ref_<X, X>
+  {
+    template <class, class> friend class ref_;
+    template <class> friend class ref;
+    template <class> friend class clone_ref;
+    typedef ref_<X, X> base;
+
+    explicit ref(X * obj)
+    {
+      base::_obj = obj;
+    }
+
+  public:
+
+    /** @multiple
+	@This dynamically allocates and construct object. Parameters
+	are passed to constructor. */
+    static ref create()
+    {
+      X *obj = new X();
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    template <typename A0>
+    static ref create(const A0 &a0)
+    {
+      X *obj = new X(a0);
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    template <typename A0, typename A1>
+    static ref create(const A0 &a0, const A1 &a1)
+    {
+      X *obj = new X(a0, a1);
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    template <typename A0, typename A1, typename A2>
+    static ref create(const A0 &a0, const A1 &a1, const A2 &a2)
+    {
+      X *obj = new X(a0, a1, a2);
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    template <typename A0, typename A1, typename A2,
+	      typename A3>
+    static ref create(const A0 &a0, const A1 &a1, const A2 &a2,
+		      const A3 &a3)
+    {
+      X *obj = new X(a0, a1, a2, a3);
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    template <typename A0, typename A1, typename A2,
+	      typename A3, typename A4>
+    static ref create(const A0 &a0, const A1 &a1, const A2 &a2,
+		      const A3 &a3, const A4 &a4)
+    {
+      X *obj = new X(a0, a1, a2, a3, a4);
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    template <typename A0, typename A1, typename A2,
+	      typename A3, typename A4, typename A5>
+    static ref create(const A0 &a0, const A1 &a1, const A2 &a2,
+		      const A3 &a3, const A4 &a4, const A5 &a5)
+    {
+      X *obj = new X(a0, a1, a2, a3, a4, a5);
+      obj->template _set_clone<X>();
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      return ref(obj);
+    }
+
+    /** @This performs a dynamic cast to @ref ref of given type */
+    template <class T>
+    ref<T> dynamiccast() const
+    {
+      T *r = dynamic_cast<T*>(base::_obj);
+      if (r)
+	base::_inc();
+      return ref<T>(r);
+    }
+
+    /** @This performs a static cast to @ref ref of given type */
+    template <class T>
+    ref<T> staticcast() const
+    {
+      if (base::_obj)
+	base::_inc();
+      return ref<T>(static_cast<T*>(base::_obj));
+    }
+
+    /** Construct an empty ref */
+    ref()
+    {
+      base::_obj = 0;
+    }
+
+    /** Construct ref from ref */
+    ref(const ref &r)
+    {
+      if ((base::_obj = r._obj))
+	base::_inc();
+    }
+
+    /** Construct ref from derived class ref */
+    template <class T>
+    ref(const ref_<T, T> &r)
+    {
+      if ((base::_obj = r._obj))
+	base::_inc();
+    }
+
+    /** Construct ref from object reference */
+    ref(X &obj)
+    {
+      base::_obj = &obj;
+      base::_inc();
+    }
+
+    /** Drop a ref */
+    ~ref()
+    {
+      if (base::_obj)
+	base::_drop();
+    }
+
+    /** Initialize ref from ref */
+    ref & operator=(const ref &r)
+    {
+      base::assign(r);
+      return *this;
+    }
+
+    /** Initialize ref from object reference */
+    ref & operator=(X & obj)
+    {
+      base::assign(obj);
+      return *this;
+    }
+
+  };
+
+  /** 
+      @short Const smart pointer class
+      @module{Smart pointer}
+      @header dpp/ref
+      @main
+      @order 2
+
+      @This class is the same as the @ref ref class but hold a @b
+      const pointer to the object.
+
+      @see {ref, ref_base}
+  */
+  template <class X>
+  class const_ref : public ref_<const X, X>
+  {
+    template <class, class> friend class ref_;
+    typedef ref_<const X, X> base;
+
+    explicit const_ref(const X * obj)
+    {
+      base::_obj = obj;
+    }
+
+  public:
+
+    /** Construct an empty ref */
+    const_ref()
+    {
+      base::_obj = 0;
+    }
+
+    /** Construct const ref from const ref */
+    const_ref(const const_ref &r)
+    {
+      if ((base::_obj = r._obj))
+	base::_inc();
+    }
+
+    /** Construct const ref from derived class ref */
+    template <class T>
+    const_ref(const ref_<T, T> &r)
+    {
+      if ((base::_obj = r._obj))
+	base::_inc();
+    }
+
+    /** Construct const ref from derived class const ref */
+    template <class T>
+    const_ref(const ref_<const T, T> &r)
+    {
+      if ((base::_obj = r._obj))
+	base::_inc();
+    }
+
+    /** Construct ref from const object reference */
+    const_ref(const X &obj)
+    {
+      base::_obj = &obj;
+      base::_inc();
+    }
+
+    /** Drop a ref */
+    ~const_ref()
+    {
+      if (base::_obj)
+	base::_drop();
+    }
+
+    /** @This performs a dynamic cast to @ref const_ref of given type */
+    template <class T>
+    const_ref<T> dynamiccast() const
+    {
+      const T *r = dynamic_cast<const T*>(base::_obj);
+      if (r)
+	base::_inc();
+      return const_ref<T>(r);
+    }
+
+    /** @This performs a static cast to @ref const_ref of given type */
+    template <class T>
+    const_ref<T> staticcast() const
+    {
+      if (base::_obj)
+	base::_inc();
+      return const_ref<T>(static_cast<const T*>(base::_obj));
+    }
+
+    /** Initialize const ref from const ref */
+    const_ref & operator=(const const_ref &r)
+    {
+      base::assign(r);
+      return *this;
+    }
+
+    /** Initialize ref from object reference */
+    const_ref & operator=(const X & obj)
+    {
+      base::assign(obj);
+      return *this;
+    }
+
+  };
+
+  /** 
+      @short Automatic cloning smart pointer class
+      @module{Smart pointer}
+      @header dpp/ref
+      @main
+      @order 1
+
+      @This implements a special kind of smart pointer which clones the
+      pointed object when copied. It is intended to be used for class
+      members when the expected behavior is to clone the pointed
+      object along with the reference holder object.
+
+      The copy constructor and copy assignment operator will clone the
+      associated object instead of just copying the
+      pointer. Constructors and assignment operators which take other
+      kind of references don't perform clone.
+
+      @example test/test_ref.cc:clone1
+
+      @see {ref, ref_base}
+  */
+  template <class X>
+  class clone_ref : public ref_<X, X>
+  {
+    template <class, class> friend class ref_;
+    typedef ref_<X, X> base;
+
+  public:
+
+    /** Construct an empty ref */
+    clone_ref()
+    {
+      base::_obj = 0;
+    }
+
+    /** Construct ref from derived class ref */
+    template <class T>
+    clone_ref(const ref_<T, T> &r)
+    {
+      base::_obj = r._obj;
+      if (base::_obj)
+	base::_inc();
+    }
+
+    /** Construct clone_ref and clone pointed object */
+    clone_ref(const clone_ref &r)
+    {
+      base::_obj = r._obj ? r._obj->template _clone<X>() : 0;
+    }
+
+    /** Construct clone_ref and clone pointed object */
+    template <class T>
+    clone_ref(const clone_ref &r)
+    {
+      base::_obj = r._obj ? r._obj->template _clone<X>() : 0;
+    }
+
+    /** Construct clone_ref from object reference */
+    clone_ref(X &obj)
+    {
+      base::_obj = &obj;
+      base::_inc();
+    }
+
+    /** Drop a clone_ref */
+    ~clone_ref()
+    {
+      if (base::_obj)
+	base::_drop();
+    }
+
+    /** @This performs a dynamic cast to @ref ref of given type */
+    template <class T>
+    ref<T> dynamiccast() const
+    {
+      T *r = dynamic_cast<T*>(base::_obj);
+      if (r)
+	base::_inc();
+      return ref<T>(r);
+    }
+
+    /** @This performs a static cast to @ref ref of given type */
+    template <class T>
+    ref<T> staticcast() const
+    {
+      if (base::_obj)
+	base::_inc();
+      return ref<T>(static_cast<T*>(base::_obj));
+    }
+
+    /** Initialize clone_ref by cloning object */
+    clone_ref & operator=(const clone_ref &r)
+    {
+      if (base::_obj)
+	base::_drop();
+      base::_obj = r._obj ? r._obj->_clone() : 0;
+      return *this;
+    }
+
+    /** Initialize ref from ref */
+    clone_ref & operator=(const ref<X> &r)
+    {
+      base::assign(r);
+      return *this;
+    }
+
+    /** Initialize ref from object reference */
+    clone_ref & operator=(X & obj)
+    {
+      base::assign(obj);
+      return *this;
+    }
+
+  };
+
+  /** @internal 
+      @module{Smart pointer}
+  */
+  template <class X, bool cloneable>
+  class ref_base_
+  {
+    template <class> friend class ref;
+
+    template <class D>
+    void _set_clone()
+    {
+      /* not cloneable, no clone callback registered here */
+    }
+  };
+
+  /** @internal 
+      @module{Smart pointer}
+      This class contains cloning code.
+  */
+  template <class X>
+  class ref_base_ <X, true>
+  {
+    template <class, class> friend class ref_;
+    template <class> friend class ref;
+    template <class> friend class clone_ref;
+    template <class, bool> friend class ref_base;
+
+    ref_base_()
+      : _ref_clone(0)
+    {
+    }
+
+    /** Clone object pointed by ref */
+    template <class D>
+    D * _clone() const
+    {
+      assert(_ref_clone || !"no clone handler defined for this object");
+      return static_cast<D*>(_ref_clone(static_cast<const D*>(this)));
+    }
+
+    template <class D /* derived class */>
+    static X * _clone_hndl(const X *x)
+    {
+      assert(typeid(D) == typeid(*x) && "clone handler does not match actual object type");
+      const D * src = static_cast<const D*>(x);
+      D * obj = new D(*src);
+      obj->_ref_clone = src->_ref_clone;
+      obj->_dynamic = true;
+      obj->_ref_count = 1;
+      obj->cloned(*src);
+      return obj;
+    }
+
+    /** set specialized clone callback */
+    template <class D>
+    void _set_clone()
+    {
+      _ref_clone = &_clone_hndl<D>;
+    }
+
+    /** pointer to clone function specialized for _derived_ class */
+    X * (*_ref_clone)(const X *);
+  };
+
+  /**
+      @short Reference counting object base class
+      @module{Smart pointer}
+      @header dpp/ref
+      @showvalue
+
+      @This is the referenced object base class, any class which
+      inherits from this class can be pointed to by a @ref ref smart
+      pointer.
+
+      @tt X template parameter must be the same as inheriting class.
+
+      The @tt cloneable parameter must be set to true in order to use
+      the @ref ref::clone method. The default value is @tt false to
+      support classes with no copy constructor and optimize pointer size.
+
+      When the DPP_REF_LIVE_REFS_ASSERT macro is defined, the base
+      class destructor assert that no more live reference to the
+      object does exist.
+  */
+  template <class X, bool cloneable = false>
+  class ref_base : public ref_base_<X, cloneable>
+  {
+    template <class, class> friend class ref_;
+    template <class> friend class ref;
+    template <class> friend class const_ref;
+    template <class, bool> friend class ref_base_;
+
+  public:
+
+    ref_base()
+      : _ref_count(0),
+	_dynamic(0)
+    {
+    }
+
+    ref_base(const ref_base &r)
+      : _ref_count(0),
+	_dynamic(0)
+    {
+    }
+
+    ref_base & operator=(const ref_base &r)
+    {
+      return *this;
+    }
+
+    virtual ~ref_base()
+    {
+#ifdef DPP_REF_LIVE_REFS_ASSERT
+      assert(_ref_count == 0 || !"Can not destruct object which has live references");
+#endif
+    }
+
+    /** Setup a clone handler for this object. This function may be
+	called from derived class constructor to make objects
+	cloneable. Objects which are dynamically allocated using the
+	@ref ref::create function do not require this call. */
+    template <class Derived>
+    void set_clone()
+    {
+      ref_base_<X, cloneable>::template _set_clone<Derived>();
+    }
+
+    /** @This is called when this object has just been cloned. The
+	call is performed on most derived class (see @ref set_clone
+	function). This default implementation is empty. */
+    void cloned(const X &src)
+    {
+    }
+
+    /** @This is called when the reference counter has just been
+	increased. The call is performed on reference to @tt X class so
+	a virtual prototype must be declared in the @tt X class to
+	override this function from further derived classes.
+	This default implementation is empty.
+	@see ref_decreased @see ref_inc
+    */
+    void ref_increased(int ref_count) const
+    {
+    }
+
+    /** Same as @ref ref_increased but called when the counter has
+	been decreased. This default implementation is empty.
+	@see ref_dec
+    */
+    void ref_decreased(int ref_count) const
+    {
+    }
+
+    /** @This increases references count on object. It should only be
+	used on rare cases when smart pointer classes can not be used
+	to track all references to the object. @see ref_drop */
+    void ref_inc() const
+    {
+#ifdef _DPP_USE_GCC_ATOMIC
+# if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      __sync_add_and_fetch(&const_cast<ref_base*>(this)->_raw, 1);
+# elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+      __sync_add_and_fetch(&const_cast<ref_base*>(this)->_raw, 2);
+# else
+#  error __BYTE_ORDER__ not defined
+# endif
+#else
+      const_cast<ref_base*>(this)->_ref_count++;
+#endif
+
+      static_cast<const X*>(this)->ref_increased(_ref_count);
+    }
+
+    /** @This decreases references count on object. Dynamically
+	allocated objects are deleted if counter reaches 0. It should
+	only be used on rare cases when smart pointer classes can not
+	be used to track all references to the object. @see ref_inc */
+    void ref_drop() const
+    {
+      assert(_ref_count > 0);
+
+#ifdef _DPP_USE_GCC_ATOMIC
+# if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      __sync_sub_and_fetch(&const_cast<ref_base*>(this)->_raw, 1);
+# elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+      __sync_sub_and_fetch(&const_cast<ref_base*>(this)->_raw, 2);
+# endif
+#else
+      const_cast<ref_base*>(this)->_ref_count--;
+#endif
+
+      static_cast<const X*>(this)->ref_decreased(_ref_count);
+
+      // free dynamically allocated objects only
+      if (_dynamic && _ref_count == 0)
+	delete this;
+    }
+
+  private:
+
+    /** reference counter value */
+    union {
+      struct {
+	int _ref_count:31;
+	int _dynamic:1;
+      };
+      int _raw;
+    };
+  };
+
+}
+
+#endif
+

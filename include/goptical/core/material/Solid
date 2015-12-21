@@ -1,0 +1,10 @@
+
+#include "goptical/core/material/solid.hpp"
+#include "goptical/core/material/solid.hxx"
+
+namespace goptical {
+  namespace material {
+    using _goptical::material::Solid;
+  }
+}
+

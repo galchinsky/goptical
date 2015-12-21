@@ -1,0 +1,10 @@
+
+#include "goptical/core/sys/group.hpp"
+#include "goptical/core/sys/group.hxx"
+
+namespace goptical {
+  namespace sys {
+    using _goptical::sys::Group;
+  }
+}
+

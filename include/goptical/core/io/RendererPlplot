@@ -1,0 +1,10 @@
+
+#include "goptical/core/io/renderer_plplot.hpp"
+#include "goptical/core/io/renderer_plplot.hxx"
+
+namespace goptical {
+  namespace io {
+    using _goptical::io::RendererPlplot;
+  }
+}
+

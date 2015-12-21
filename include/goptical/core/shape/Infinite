@@ -1,0 +1,10 @@
+
+#include "goptical/core/shape/infinite.hpp"
+#include "goptical/core/shape/infinite.hxx"
+
+namespace goptical {
+  namespace shape {
+    using _goptical::shape::Infinite;
+    using _goptical::shape::infinite;
+  }
+}

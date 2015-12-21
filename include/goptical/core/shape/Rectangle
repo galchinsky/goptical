@@ -1,0 +1,9 @@
+
+#include "goptical/core/shape/rectangle.hpp"
+#include "goptical/core/shape/rectangle.hxx"
+
+namespace goptical {
+  namespace shape {
+    using _goptical::shape::Rectangle;
+  }
+}

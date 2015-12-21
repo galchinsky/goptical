@@ -1,0 +1,10 @@
+
+#include "goptical/core/curve/sphere.hpp"
+#include "goptical/core/curve/sphere.hxx"
+
+namespace goptical {
+  namespace curve {
+    using _goptical::curve::Sphere;
+  }
+}
+

@@ -1,0 +1,4 @@
+
+#include "goptical/core/curve/spline.hpp"
+#include "goptical/core/curve/spline.hxx"
+

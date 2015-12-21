@@ -1,0 +1,10 @@
+
+#include "goptical/core/sys/stop.hpp"
+#include "goptical/core/sys/stop.hxx"
+
+namespace goptical {
+  namespace sys {
+    using _goptical::sys::Stop;
+  }
+}
+

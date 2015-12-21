@@ -1,0 +1,10 @@
+
+#include "goptical/core/io/import_oslo.hpp"
+//#include "goptical/core/io/import_oslo.hxx"
+
+namespace goptical {
+  namespace io {
+    using _goptical::io::ImportOslo;
+  }
+}
+

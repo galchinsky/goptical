@@ -1,0 +1,11 @@
+
+#include "goptical/core/math/matrix.hpp"
+#include "goptical/core/math/matrix.hxx"
+
+namespace goptical {
+  namespace math {
+    using _goptical::math::Matrix;
+    using _goptical::math::Matrix3x3;
+  }
+}
+

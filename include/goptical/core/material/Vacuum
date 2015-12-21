@@ -1,0 +1,11 @@
+
+#include "goptical/core/material/vacuum.hpp"
+#include "goptical/core/material/vacuum.hxx"
+
+namespace goptical {
+  namespace material {
+    using _goptical::material::Vacuum;
+    using _goptical::material::vacuum;
+  }
+}
+

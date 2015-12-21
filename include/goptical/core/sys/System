@@ -1,0 +1,10 @@
+
+#include "goptical/core/sys/system.hpp"
+#include "goptical/core/sys/system.hxx"
+
+namespace goptical {
+  namespace sys {
+    using _goptical::sys::system;
+  }
+}
+

@@ -1,0 +1,10 @@
+
+#include "goptical/core/shape/ring.hpp"
+#include "goptical/core/shape/ring.hxx"
+
+namespace goptical {
+  namespace shape {
+    using _goptical::shape::Ring;
+  }
+}
+

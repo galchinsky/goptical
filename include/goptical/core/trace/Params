@@ -1,0 +1,10 @@
+
+#include "goptical/core/trace/params.hpp"
+#include "goptical/core/trace/params.hxx"
+
+namespace goptical {
+  namespace trace {
+    using _goptical::trace::Params;
+  }
+}
+

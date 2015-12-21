@@ -1,0 +1,9 @@
+
+#include "goptical/core/io/export.hpp"
+//#include "goptical/core/io/export.hxx"
+
+namespace goptical {
+  namespace io {
+    using _goptical::io::Export;
+  }
+}

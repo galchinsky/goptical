@@ -1,0 +1,24 @@
+
+
+#include "goptical/core/math/vector.hpp"
+#include "goptical/core/math/vector.hxx"
+
+namespace goptical {
+  namespace math {
+    using _goptical::math::Vector;
+    using _goptical::math::Vector2;
+    using _goptical::math::Vector3;
+
+    using _goptical::math::vector2_0;
+    using _goptical::math::vector2_1;
+    using _goptical::math::vector2_01;
+    using _goptical::math::vector2_10;
+    using _goptical::math::vector3_0;
+    using _goptical::math::vector3_1;
+    using _goptical::math::vector3_001;
+    using _goptical::math::vector3_010;
+    using _goptical::math::vector3_100;
+  }
+}
+
+

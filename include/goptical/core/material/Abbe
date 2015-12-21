@@ -1,0 +1,12 @@
+
+#include "goptical/core/material/abbe.hpp"
+#include "goptical/core/material/abbe.hxx"
+
+namespace goptical {
+  namespace material {
+    using _goptical::material::Abbe;
+    using _goptical::material::AbbeVd;
+    using _goptical::material::AbbeVe;
+  }
+}
+

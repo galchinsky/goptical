@@ -1,0 +1,10 @@
+
+#include "goptical/core/data/discrete_set.hpp"
+#include "goptical/core/data/discrete_set.hxx"
+
+namespace goptical {
+  namespace data {
+    using _goptical::data::DiscreteSet;
+  }
+}
+

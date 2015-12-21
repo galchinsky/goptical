@@ -1,0 +1,12 @@
+
+#include "cassegrain.hpp"
+#include "cassegrain.hxx"
+
+namespace goptical {
+  namespace Design {
+    namespace telescope {
+      using _goptical::Design::telescope::Cassegrain;
+    }
+  }
+}
+

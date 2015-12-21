@@ -1,0 +1,10 @@
+
+#include "goptical/core/curve/polynomial.hpp"
+#include "goptical/core/curve/polynomial.hxx"
+
+namespace goptical {
+  namespace curve {
+    using _goptical::curve::Polynomial;
+  }
+}
+

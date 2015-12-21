@@ -1,0 +1,292 @@
+/* -*- c++ -*-
+
+   Simple C++ variable array of non-POD objects
+
+   This file is part of the dpp library of C++ template classes
+
+   doc: http://diaxen.ssji.net/dpp/index.html
+   repo: https://www.ssji.net/svn/projets/trunk/libdpp
+
+   This program is free software: you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of
+   the License, or (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with this program.  If not, see
+   <http://www.gnu.org/licenses/>.
+
+   (c) 2011 Alexandre Becoulet <alexandre.becoulet@free.fr>
+
+*/
+
+#include <memory>
+#include <stdexcept>
+
+#include <stddef.h>
+#include <stdint.h>
+
+/** @file @module{Variable length array} */
+
+namespace dpp {
+
+  /** @short Variable length array iterator class
+      @module {Variable length array}
+      @header dpp/vlarray
+      @internal
+  */
+  template <typename X, int direction>
+  class vlarray_iterator
+  {
+    template <class, int> friend class vlarray_iterator;
+
+  public:
+
+    typedef X value_type;
+    typedef X & reference;
+    typedef const X & const_reference;
+    typedef X * pointer;
+    typedef const X * const_pointer;
+    typedef unsigned int size_type;
+    typedef int difference_type;
+
+    typedef std::bidirectional_iterator_tag iterator_category;
+
+    vlarray_iterator()
+    {
+    }
+
+    vlarray_iterator(X *vlarray, unsigned int i)
+      : _array(vlarray),
+	_i(i)
+    {
+    }
+
+    template <class T>
+    vlarray_iterator(const vlarray_iterator<T, direction> &i)
+      : _array(i._array),
+	_i(i._i)
+    {
+    }
+
+    X & operator*()
+    {
+      return _array[_i];
+    }
+
+    X * operator->()
+    {
+      return &_array[_i];
+    }
+
+    vlarray_iterator & operator++()
+    {
+      _i += direction;
+      return *this;
+    }
+
+    vlarray_iterator operator++(int)
+    {
+      vlarray_iterator tmp(*this);
+      _i += direction;
+      return tmp;
+    }
+
+    vlarray_iterator & operator--()
+    {
+      _i -= direction;
+      return *this;
+    }
+
+    vlarray_iterator operator--(int)
+    {
+      vlarray_iterator tmp(*this);
+      _i -= direction;
+      return tmp;
+    }
+
+    vlarray_iterator operator-(int x) const
+    {
+      return vlarray_iterator(_array, _i - x);
+    }
+
+    vlarray_iterator operator+(int x) const
+    {
+      return vlarray_iterator(_array, _i + x);
+    }
+
+    difference_type operator-(const vlarray_iterator & i) const
+    {
+      return _i - i._i;
+    }
+
+    bool operator<(const vlarray_iterator & i) const
+    {
+      return _i < i._i;
+    }
+
+    bool operator==(const vlarray_iterator &i) const
+    {
+      return _i == i._i;
+    }
+
+    bool operator!=(const vlarray_iterator &i) const
+    {
+      return _i != i._i;
+    }
+
+  private:
+    X *_array;
+    unsigned int _i;
+  };
+
+  /** @short Variable length array class
+      @module {Variable length array}
+      @header dpp/vlarray
+
+      Variable lenght arrays of non POD types are not supported in
+      C++. This class provides a container array which uses storage
+      space passed to constructor. The @ref #DPP_VLARRAY macro can be
+      used to declare storage space buffer along with array container,
+      providing variable lenght array feature:
+
+      @example test/test_vlarray.cc:example
+  */
+  template <typename X>
+  class vlarray
+  {
+  public:
+
+    /** Variable array declaration macro. @This macro declares a
+	buffer array of integers along with a @ref vlarray object and
+	pass the buffer array as storage space to the @ref vlarray
+	constructor. @hidecontent */
+#define DPP_VLARRAY(type, size, name)		\
+  uint64_t _##name[sizeof(type) * size / 8 + 1];	\
+  ::dpp::vlarray<type> name(_##name, size); /* FIXME size alignment */
+
+    typedef X value_type;
+    typedef X & reference;
+    typedef const X & const_reference;
+    typedef X * pointer;
+    typedef const X * const_pointer;
+    typedef unsigned int size_type;
+    typedef int difference_type;
+
+    typedef vlarray_iterator<X, 1> iterator;
+    typedef vlarray_iterator<const X, 1> const_iterator;
+    typedef vlarray_iterator<X, -1> reverse_iterator;
+    typedef vlarray_iterator<const X, -1> const_reverse_iterator;
+
+    /* @This declare a variable lenght array with given storage space
+       and elements count. The default constructor is invoked for all
+       new array items. */
+    vlarray(void *array, size_t size)
+      : _array((X*)array),
+	_size(size)
+    {
+      for (size_t i = 0; i < _size; i++)
+	new ((X*)(_array + i)) X();
+    }
+
+    /* @This invokes destructor for all array items */
+    ~vlarray()
+    {
+      for (size_t i = 0; i < _size; i++)
+	(_array + i)->~X();
+    }
+
+    size_t size() const
+    {
+      return _size;
+    }
+
+    size_t capacity() const
+    {
+      return _size;
+    }
+
+    X & operator[](int i)
+    {
+      return _array[i];
+    }
+
+    const X & operator[](int i) const
+    {
+      return _array[i];
+    }
+
+    X & at(int i)
+    {
+      if (i >= _size)
+	throw std::out_of_range("");
+      return _array[i];
+    }
+
+    const X & at(int i) const
+    {
+      if (i >= _size)
+	throw std::out_of_range("");
+      return _array[i];
+    }
+
+    /** @This returns @ref iterator to first object in pool */
+    iterator begin()
+    {
+      return iterator(_array, 0);
+    }
+
+    /** @This returns end @ref iterator */
+    iterator end()
+    {
+      return iterator(_array, size());
+    }
+
+    /** @This returns @ref const_iterator to first object in pool */
+    const_iterator begin() const
+    {
+      return const_iterator(_array, 0);	
+    }
+
+    /** @This returns end @ref const_iterator */
+    const_iterator end() const
+    {
+      return const_iterator(_array, size());
+    }
+
+    /** @This returns @ref reverse_iterator to last object in pool */
+    reverse_iterator rbegin()
+    {
+      return reverse_iterator(_array, size() - 1);
+    }
+
+    /** @This returns end @ref reverse_iterator */
+    reverse_iterator rend()
+    {
+      return reverse_iterator(_array, -1);
+    }
+
+    /** @This returns @ref const_reverse_iterator to first object in pool */
+    const_reverse_iterator rbegin() const
+    {
+      return const_reverse_iterator(_array, size() - 1);
+    }
+
+    /** @This returns end @ref const_reverse_iterator */
+    const_reverse_iterator rend() const
+    {
+      return const_reverse_iterator(_array, -1);
+    }
+
+  private:
+    X *_array;
+    size_t _size;
+  };
+
+}
+
