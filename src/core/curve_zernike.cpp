@@ -686,11 +686,11 @@ namespace _goptical {
 
     double Zernike::fit(const Base &curve, const trace::Distribution & d)
     {
+
       // get distributed sample points on surface
       std::vector<math::Vector2 > pattern;
-      delegate_push<typeof(pattern)> pattern_push(pattern);
       shape::Disk shape(1.0);
-      shape.get_pattern(pattern_push, d, false);
+      shape.get_pattern([&](const math::Vector2& item) { pattern.push_back(item); }, d, false);
 
       unsigned int pcount = pattern.size();
 
@@ -703,11 +703,11 @@ namespace _goptical {
 
       // setup least square fit matrix from sample points
 
-      GOPTICAL_FOREACH(pt, pattern)
+      for (auto&pt : pattern)
         {
-          struct zp_precalc_s p(pt->x(), pt->y());
+          struct zp_precalc_s p(pt.x(), pt.y());
 
-          gsl_vector_set(y, i, curve.sagitta(*pt * _radius));
+          gsl_vector_set(y, i, curve.sagitta(pt * _radius));
           
           for (unsigned int j = 0; j < term_count; j++)
             gsl_matrix_set(X, i, j, zp[j](p) * _scale);
@@ -735,6 +735,7 @@ namespace _goptical {
       update_threshold_state();
 
       return sqrt(chisq / pcount);
+
     }
 
     void Zernike::update_threshold_state()

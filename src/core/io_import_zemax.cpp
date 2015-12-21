@@ -214,10 +214,10 @@ namespace _goptical {
           return material::mirror;
 
         case zg_fixed:
-          GOPTICAL_FOREACH(c, _cat_list)
+          for (auto& c : _cat_list)
             {
               try {
-                return c->second->get_material(surf.gl_name);
+                return c.second->get_material(surf.gl_name);
               } catch (...) {
               }
             }

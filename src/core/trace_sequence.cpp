@@ -59,9 +59,9 @@ namespace _goptical {
 
     void Sequence::add(const sys::Container &c)
     {
-      GOPTICAL_FOREACH(i, c.get_element_list())
+      for (auto&i : c.get_element_list())
         {
-          if (const sys::Container *cc = dynamic_cast<const sys::Container*>(i->ptr()))
+          if (const sys::Container *cc = dynamic_cast<const sys::Container*>(i.ptr()))
             add(*cc);
           else
             _list.push_back(*i);
@@ -70,8 +70,8 @@ namespace _goptical {
 
     std::ostream & operator<<(std::ostream &o, const Sequence &s)
     {
-      GOPTICAL_FOREACH(i, s._list)
-        o << "  " << **i << std::endl;
+      for (auto&i : s._list)
+        o << "  " << *i << std::endl;
 
       return o;
     }

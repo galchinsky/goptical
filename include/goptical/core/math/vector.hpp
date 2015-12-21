@@ -28,6 +28,7 @@
 
 #include <ostream>
 
+
 #include "goptical/core/common.hpp"
 
 namespace _goptical {
@@ -129,10 +130,11 @@ namespace _goptical {
 
        The @ref math namespace contains some commonly used constant vector objects.
      */
+
     template <typename T> struct Vector<2, T> : public VectorBase<2, T>
     {
       typedef VectorBase<2, T> base;
-      typedef delegate<void (const math::Vector2 &)> put_delegate_t;
+      typedef std::function<void (const math::Vector2 &)> put_delegate_t;
 
       inline Vector();
 
@@ -176,7 +178,7 @@ namespace _goptical {
     template <typename T> struct Vector<3, T> : public VectorBase<3, T>
     {
       typedef VectorBase<3, T> base;
-      typedef delegate<void (const Vector<3, T> &)> put_delegate_t;
+      typedef std::function<void (const Vector<3, T> &)> put_delegate_t;
 
       inline Vector();
 

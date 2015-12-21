@@ -186,9 +186,9 @@ namespace _goptical
 
     const trace::Ray & RayFan::find_chief_ray(const trace::rays_queue_t &intercepts, double wavelen)
     {
-      GOPTICAL_FOREACH(i, intercepts)
+      for(auto& i : intercepts)
         {
-          trace::Ray & ray = **i;
+          trace::Ray & ray = *i;
 
           if (ray.get_wavelen() == wavelen && fabs(get_entrance_height(ray, /* dummy */ ray)) < 1e-8)
             return ray;
@@ -289,9 +289,9 @@ namespace _goptical
 
       // extract data for each wavelen
 
-      GOPTICAL_FOREACH(w, result.get_ray_wavelen_set())
+      for(auto& w : result.get_ray_wavelen_set())
         {
-          const trace::Ray & chief_ray = find_chief_ray(intercepts, *w);
+          const trace::Ray & chief_ray = find_chief_ray(intercepts, w);
 
           // get chief ray reference values
 
@@ -316,11 +316,11 @@ namespace _goptical
           ref<data::DiscreteSet> s = GOPTICAL_REFNEW(data::DiscreteSet);
           s->set_interpolation(data::Cubic);
 
-          GOPTICAL_FOREACH(i, intercepts)
+          for(auto& i : intercepts)
             {
-              trace::Ray & ray = **i;
+              trace::Ray & ray = *i;
 
-              if (ray.get_wavelen() != *w)
+              if (ray.get_wavelen() != w)
                 continue;
 
               double x_val, y_val;
@@ -343,7 +343,7 @@ namespace _goptical
             continue;
 
           data::Plotdata p(*s);
-          p.set_color(light::SpectralLine::get_wavelen_color(*w));
+          p.set_color(light::SpectralLine::get_wavelen_color(w));
           plot->add_plot_data(p);
         }
 

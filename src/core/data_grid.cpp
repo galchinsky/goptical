@@ -53,14 +53,16 @@ namespace _goptical {
 
     void Grid::set_all_y(double y)
     {
-      GOPTICAL_FOREACH(i, _y_data)
-        *i = y;
+      for (auto& i : _y_data) {
+        i = y;
+      }
     }
 
     void Grid::set_all_d(const math::Vector2 & deriv)
     {
-      GOPTICAL_FOREACH(i, _d_data)
-        *i = deriv;
+      for (auto& i : _d_data) {
+        i = deriv;
+      }
     }
 
     double Grid::get_x_value(unsigned int x, unsigned int dimension) const

@@ -77,15 +77,15 @@ namespace _goptical
       double    max = 0;        // max radius
       double    intensity = 0;  // total intensity
 
-      GOPTICAL_FOREACH(i, *_intercepts)
+      for(auto& i : *_intercepts)
         {
-          double        dist = ((*i)->get_intercept_point() - _centroid).len();
+          double        dist = (i->get_intercept_point() - _centroid).len();
 
           if (max < dist)
             max = dist;
 
           mean += math::square(dist);
-          intensity += (*i)->get_intensity();
+          intensity += i->get_intensity();
         }
 
       _useful_radius = _max_radius = max;
@@ -101,10 +101,10 @@ namespace _goptical
 
       double    intensity = 0;
 
-      GOPTICAL_FOREACH(i, *_intercepts)
+      for(auto& i : *_intercepts)
         {
-          if (((*i)->get_intercept_point() - _centroid).len() <= radius)
-            intensity += (*i)->get_intensity();
+          if ((i->get_intercept_point() - _centroid).len() <= radius)
+            intensity += i->get_intensity();
         }
 
       return intensity;
@@ -125,7 +125,7 @@ namespace _goptical
 
       // create plot data for each wavelen
 
-      GOPTICAL_FOREACH(w, result.get_ray_wavelen_set())
+      for(auto& w : result.get_ray_wavelen_set())
         {
           ref<data::SampleSet> s = GOPTICAL_REFNEW(data::SampleSet);
 
@@ -133,14 +133,14 @@ namespace _goptical
           s->set_metrics(0.0, _useful_radius / (double)zones);
           s->resize(zones + 1);
 
-          data_sets.insert(data_sets_t::value_type(*w, s));
+          data_sets.insert(data_sets_t::value_type(w, s));
         }
 
       // compute encircled intensity for each radius range
 
-      GOPTICAL_FOREACH(i, *_intercepts)
+      for(auto& i : *_intercepts)
         {
-          double dist = ((*i)->get_intercept_point() - _centroid).len();
+          double dist = (i->get_intercept_point() - _centroid).len();
 
           if (dist > _useful_radius)
             continue;
@@ -149,22 +149,22 @@ namespace _goptical
 
           assert(n >= 0 && n < zones);
 
-          data_sets[(*i)->get_wavelen()]->get_y_value(n + 1) += (*i)->get_intensity();
+          data_sets[i->get_wavelen()]->get_y_value(n + 1) += i->get_intensity();
         }
 
       // integrate
 
       ref<data::Plot> plot = GOPTICAL_REFNEW(data::Plot);
 
-      GOPTICAL_FOREACH(d, data_sets)
+      for (auto& d : data_sets)
         {
           for (int i = 1; i < zones; i++)
-            d->second->get_y_value(i + 1) += d->second->get_y_value(i);
+            d.second->get_y_value(i + 1) += d.second->get_y_value(i);
 
-          data::Plotdata p(*d->second);
+          data::Plotdata p(d.second);
 
           //      p.set_label("Encircled ray intensity"); FIXME set wavelen
-          p.set_color(light::SpectralLine::get_wavelen_color(d->first));
+          p.set_color(light::SpectralLine::get_wavelen_color(d.first));
           p.set_style(data::LinePlot);
 
           plot->add_plot_data(p);

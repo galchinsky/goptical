@@ -139,7 +139,9 @@ namespace _goptical {
         } break;
 
         default: {
-
+#if 1
+exit(-20);
+#else
           DPP_DELEGATE3_OBJ(f2, void, (const math::Vector2 &v),
                             const math::Vector2::put_delegate_t &, f, // _0
                             double, xyr,                              // _1
@@ -151,6 +153,7 @@ namespace _goptical {
           });
 
           Base::get_pattern(f2, d, unobstructed);
+#endif
           break;
         }
 

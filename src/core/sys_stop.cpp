@@ -113,10 +113,10 @@ namespace _goptical {
     inline void Stop::process_rays_(trace::Result &result,
                                     trace::rays_queue_t *input) const
     {
-      GOPTICAL_FOREACH(i, *input)
+      for (auto&i : *input)
         {
           math::VectorPair3 intersect;
-          trace::Ray  &ray = **i;
+          trace::Ray  &ray = *i;
 
           const math::Transform<3> &t = ray.get_creator()->get_transform_to(*this);
           math::VectorPair3 local(t.transform_line(ray));
@@ -161,12 +161,9 @@ namespace _goptical {
       r.group_begin();
       std::vector<math::Vector3 > poly;
 
-      DPP_DELEGATE2_OBJ(d, void, (const math::Vector2 &t),
-                        std::vector<math::Vector3 > &, poly, // _0
-                        const math::Transform<3> &, get_transform_to(ref), // _1
-      {
-        _0.push_back(_1.transform(math::Vector3(t, 0.)));
-      });
+      auto d = [&](const math::Vector2 &t) {
+        poly.push_back(get_transform_to(ref).transform(math::Vector3(t, 0.)));
+      };
 
       for (unsigned int i = 0; i < get_shape().get_contour_count(); i++)
         {

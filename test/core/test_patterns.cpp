@@ -151,7 +151,7 @@ int main()
 
           bool first = true;
 
-          GOPTICAL_FOREACH(v, pts)
+          for (auto&v, pts)
             {
               r.draw_point(*v, io::rgb_red, io::PointStyleCross);
 
@@ -171,7 +171,7 @@ int main()
               if (j != trace::RandomDist)
                 {
                   // check for duplicates
-                  GOPTICAL_FOREACH(w, pts)
+                  for (auto&w, pts)
                     if (&*v != &*w && v->close_to(*w, 1))
                       {
                         std::cerr << "-- dup " << *w << *v << "\n";

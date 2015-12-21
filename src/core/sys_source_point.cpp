@@ -59,82 +59,65 @@ namespace _goptical {
         return;
 
       double rlen = result.get_params().get_lost_ray_length();
-
       const trace::Distribution &d = result.get_params().get_distribution(*starget);
 
-      DPP_DELEGATE5_OBJ(de, void, (const math::Vector3 &i),
+      auto de = [&]( const math::Vector3 &i ) {
+          math::Vector3 r = starget->get_transform_to(*this).transform(i);  // pattern point on target surface
+          math::Vector3 direction;
+          math::Vector3 position;
 
-                        // _0
-                        const SourcePoint *, this,
-
-                        // _1 ray aiming at target surface origin in source coordinates
-                        const math::VectorPair3 &,
-                        math::VectorPair3(starget->get_position(*this) -
-                                            math::vector3_001 * rlen, math::vector3_001),
-
-                        // _2 transform from target to source coordinates
-                        const math::Transform<3> &,
-                        starget->get_transform_to(*this),
-
-                        // _3
-                        const material::Base *,
-                        _mat.valid() ? _mat.ptr() : &get_system()->get_environment_proxy(),
-
-                        // _4
-                        trace::Result &, result,
-
-      {
-        math::Vector3 r = _2.transform(i);  // pattern point on target surface
-        math::Vector3 direction;
-        math::Vector3 position;
-
-        switch (mode)
+          switch (mode)
           {
           case (SourceAtFiniteDistance):
-            position = math::vector3_0;
-            direction = r.normalized();
-            break;
-
+              position = math::vector3_0;
+              direction = r.normalized();
+              break;
+              
           case (SourceAtInfinity):
-            direction = math::vector3_001;
-            position = _1.pl_ln_intersect(math::VectorPair3(r, direction));
-            break;
+              direction = math::vector3_001;
+              position = math::VectorPair3(starget->get_position(*this) -
+                                           math::vector3_001 * rlen, math::vector3_001).
+                  pl_ln_intersect(math::VectorPair3(r, direction));
+              break;
           }
-
-        GOPTICAL_FOREACH(l, _0->_spectrum)
-          {
-            trace::Ray &r = _4.new_ray();
-
-            // generated rays use source coordinates
-            r.direction() = direction;
-            r.origin() = position;
-
-            r.set_creator(_0);
-            r.set_intensity(l->get_intensity()); // FIXME depends on distance from source and pattern density
-            r.set_wavelen(l->get_wavelen());
-            r.set_material(_3);
+          
+          for (auto&l : this->_spectrum) {
+              trace::Ray &r = result.new_ray();
+              
+              // generated rays use source coordinates
+              r.direction() = direction;
+              r.origin() = position;
+              
+              r.set_creator(this);
+              r.set_intensity(l.get_intensity()); // FIXME depends on distance from source and pattern density
+              r.set_wavelen(l.get_wavelen());
+              r.set_material(_mat.valid() ? _mat.ptr() : &get_system()->get_environment_proxy());
           }
-      });
-
+      };
+      
       starget->get_pattern(de, d, result.get_params().get_unobstructed());
+
     }
         
     void SourcePoint::generate_rays_simple(trace::Result &result,
                                            const targets_t &entry) const
     {
-      GOPTICAL_FOREACH(l, _spectrum)
-        result.add_ray_wavelen(l->get_wavelen());
+      for (auto&l : _spectrum) {
+        result.add_ray_wavelen(l.get_wavelen());
+      }
 
       switch (_mode)
         {
         case SourceAtFiniteDistance:
-          GOPTICAL_FOREACH(target, entry)
-            get_lightrays_<SourceAtFiniteDistance>(result, **target);
+          for (auto& target : entry) {
+              get_lightrays_<SourceAtFiniteDistance>(result, *target);
+          }
           return;
 
         case SourceAtInfinity:
-          GOPTICAL_FOREACH(target, entry)
-            get_lightrays_<SourceAtInfinity>(result, **target);
+          for (auto& target : entry) {
+              get_lightrays_<SourceAtInfinity>(result, *target);
+          }
           return;
         }
     }

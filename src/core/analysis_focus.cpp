@@ -56,12 +56,9 @@ namespace _goptical
       math::VectorPair3 beam_avg(math::Vector3(0, 0, 0),
                                  math::Vector3(0, 0, 0));
 
-      GOPTICAL_FOREACH(i, *_intercepts)
-        {
-          trace::Ray    &ray = **i;
-
-          beam_avg.origin() += ray.get_position();
-          beam_avg.direction() += ray.get_direction();
+      for(auto& ray : *_intercepts) {
+          beam_avg.origin() += ray->get_position();
+          beam_avg.direction() += ray->get_direction();
         }
 
       beam_avg.origin() /= count;
@@ -75,9 +72,9 @@ namespace _goptical
 
       list.reserve(_intercepts->size());
 
-      GOPTICAL_FOREACH(i, *_intercepts)
+      for(auto* i : *_intercepts)
         {
-          trace::Ray    &ray = **i;
+          trace::Ray    &ray = *i;
 
           const math::Vector3   &u = beam_avg.direction();
           const math::Vector3   &v = ray.get_direction();
@@ -103,8 +100,8 @@ namespace _goptical
 
       double    average = 0;
 
-      GOPTICAL_FOREACH(i, list)
-        average += /*square*/(*i);
+      for(auto& i : list)
+        average += /*square*/(i);
 
       average /= (double)list.size();
 

@@ -79,16 +79,16 @@ namespace _goptical {
 
       bool res = _shape->inside(tp);
 
-      GOPTICAL_FOREACH(s, _list)
-        res &= s->inside(tp);
+      for (auto& s:  _list)
+        res &= s.inside(tp);
 
       return res ^ _exclude;
     }
 
     bool Composer::inside(const math::Vector2 &point) const
     {
-      GOPTICAL_FOREACH(s, _list)
-        if (s->inside(point))
+      for (auto&s : _list)
+        if (s.inside(point))
           return true;
 
       return false;
@@ -101,11 +101,11 @@ namespace _goptical {
 
       _contour_cnt = 0;
 
-      GOPTICAL_FOREACH(s, _list)
+      for (auto&s : _list)
         {
           // update max radius
 
-          double m = s->_transform.transform(math::vector2_0).len() + s->_shape->max_radius();
+          double m = s._transform.transform(math::vector2_0).len() + s._shape->max_radius();
 
           if (m > _max_radius)
             _max_radius = m;
@@ -114,7 +114,7 @@ namespace _goptical {
 
           // update bounding box
 
-          math::VectorPair2 bi = s->_transform.transform_pair(s->_shape->get_bounding_box());
+          math::VectorPair2 bi = s._transform.transform_pair(s._shape->get_bounding_box());
 
           for (unsigned int j = 0; j < 2; j++)
             {
@@ -129,7 +129,7 @@ namespace _goptical {
             }
 
           // update contour count
-          _contour_cnt += s->_shape->get_contour_count();
+          _contour_cnt += s._shape->get_contour_count();
         }
 
       _bbox = math::VectorPair2(a, b);
@@ -187,26 +187,18 @@ namespace _goptical {
         }
       else
         {
-          GOPTICAL_FOREACH(s, _list)
+          for (auto& s : _list)
             {
-              DPP_DELEGATE3_OBJ(de, void, (const math::Vector2 &v),
-                                // _0
-                                const math::Vector2::put_delegate_t &, f,
-                                // _1
-                                const math::Transform<2> &, s->_transform,
-                                // _2
-                                const std::list <Attributes> &, s->_list,
-              {
-                math::Vector2 p = _1.transform(v);
+              auto de = [&](const math::Vector2 &v) {
+                math::Vector2 p = s._transform.transform(v);
 
-                GOPTICAL_FOREACH(s, _2)
-                  if (!s->_exclude ^ s->_shape->inside(s->_inv_transform.transform(p)))
+                for (auto &s1 : s._list)
+                  if (!s1._exclude ^ s1._shape->inside(s1._inv_transform.transform(p)))
                     return;
+                f(p);
+              };
 
-                _0(p);
-              });
-
-              s->_shape->get_pattern(de, d, unobstructed);
+              s._shape->get_pattern(de, d, unobstructed);
             }
         }
     }
@@ -223,22 +215,17 @@ namespace _goptical {
     {
       // FIXME add contour boolean operations
 
-      GOPTICAL_FOREACH(s, _list)
+      for (auto&s : _list)
         {
-          unsigned int c = s->_shape->get_contour_count();
+          unsigned int c = s._shape->get_contour_count();
 
           if (contour < c)
             {
-              DPP_DELEGATE2_OBJ(de, void, (const math::Vector2 &v),
-                                // _0
-                                const math::Vector2::put_delegate_t &, f,
-                                // _1
-                                const math::Transform<2> &, s->_transform,
-              {
-                _0(_1.transform(v));
-              });
+              auto de = [&](const math::Vector2 &v) {
+                f(s._transform.transform(v));
+              };
 
-              return s->_shape->get_contour(contour, de, resolution);
+              return s._shape->get_contour(contour, de, resolution);
             }
 
           contour -= c;
@@ -247,26 +234,22 @@ namespace _goptical {
 
     void Composer::get_triangles(const math::Triangle<2>::put_delegate_t  &f, double resolution) const
     {
-      GOPTICAL_FOREACH(s, _list)
+
+      for (auto&s :  _list)
         {
-          DPP_DELEGATE2_OBJ(de, void, (const math::Triangle<2> &t),
-                            // _0
-                            const math::Triangle<2>::put_delegate_t &, f,
-                            // _1
-                            const math::Transform<2> &, s->_transform,
-          {
-            math::Triangle<2> p;
+            auto de = [&] (const math::Triangle<2>& t) {
+                math::Triangle<2> p;
+                
+                for (unsigned int i = 0; i < 3; i++)
+                    p[i] = s._transform.transform(t[i]);
+                
+                f(p);
+            };
 
-            for (unsigned int i = 0; i < 3; i++)
-              p[i] = _1.transform(t[i]);
-
-            _0(p);
-          });
-
-          s->_shape->get_triangles(de, resolution);
+            s._shape->get_triangles(de, resolution);
         }
-    }
 
+    }
   }
 }
 

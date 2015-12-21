@@ -146,14 +146,14 @@ namespace _goptical {
 
       _max_intensity = result.get_max_ray_intensity();
 
-      GOPTICAL_FOREACH(s, sl)
+      for (auto& s : sl)
         {
-          const trace::rays_queue_t &rl = result.get_generated(*(sys::Element*)*s);
+          const trace::rays_queue_t &rl = result.get_generated(*(sys::Element*)s);
 
-          GOPTICAL_FOREACH(r, rl)
+          for(auto& r : rl)
             {
               group_begin("ray");
-              draw_traced_ray_recurs<D, false>(**r, lost_len, ref, hit_image);
+              draw_traced_ray_recurs<D, false>(*r, lost_len, ref, hit_image);
               group_end();
             }
         }
@@ -177,9 +177,9 @@ namespace _goptical {
     {
       _max_intensity = result.get_max_ray_intensity();
 
-      GOPTICAL_FOREACH(i, result.get_intercepted(s))
+      for (auto& i : result.get_intercepted(s))
         {
-          const trace::Ray &ray = **i;
+          const trace::Ray &ray = *i;
           // dont need global transform here, draw ray intercept points in
           // surface local coordinates.
           draw_point(ray.get_intercept_point().project_xy(), ray_to_rgb(ray));

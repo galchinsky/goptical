@@ -134,8 +134,8 @@ namespace _goptical {
 
     void Polygon::get_contour(unsigned int contour, const math::Vector2::put_delegate_t  &f, double resolution) const
     {
-      GOPTICAL_FOREACH(v, _vertices)
-        f(*v);
+      for (auto&v : _vertices)
+        f(v);
     }
 
     void Polygon::get_triangles(const math::Triangle<2>::put_delegate_t &f, double resolution) const

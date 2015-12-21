@@ -72,8 +72,9 @@ namespace _goptical {
       // ray in source coordinates
       const math::VectorPair3 r(math::vector3_0, so.normalized());
 
-      GOPTICAL_FOREACH(l, _spectrum)
-        _rays.create(r, l->get_intensity(), l->get_wavelen());
+      for (auto&l : _spectrum) {
+          _rays.create(r, l.get_intensity(), l.get_wavelen());
+      }
     }
 
     void SourceRays::add_marginal_rays(const sys::system &sys, double entrance_height)
@@ -103,15 +104,16 @@ namespace _goptical {
       // ray in source coordinates
       const math::VectorPair3 r(t1.transform_line(math::VectorPair3(on_axis, (edge3 - on_axis).normalized())));
 
-      GOPTICAL_FOREACH(l, _spectrum)
-        _rays.create(r, l->get_intensity(), l->get_wavelen());
+      for (auto&l : _spectrum) {
+        _rays.create(r, l.get_intensity(), l.get_wavelen());
+      }
     }
 
     void SourceRays::add_rays(const math::VectorPair3 &ray, const Element *ref)
     {
-      GOPTICAL_FOREACH(l, _spectrum)
+      for (auto&l : _spectrum)
         {
-          light::Ray r(ray, l->get_intensity(), l->get_wavelen());
+          light::Ray r(ray, l.get_intensity(), l.get_wavelen());
           add_ray(r, ref);
         }
     }
@@ -144,13 +146,14 @@ namespace _goptical {
       const material::Base *m = _mat.valid()
         ? _mat.ptr() : &get_system()->get_environment_proxy();
 
-      GOPTICAL_FOREACH(w, _wl_map)
-        if (w->second)
-          result.add_ray_wavelen(w->first);
+      for (auto&w :  _wl_map) {
+          if (w.second)
+              result.add_ray_wavelen(w.first);
+      }
 
-      GOPTICAL_FOREACH(lr, _rays)
+      for (auto &lr : _rays)
         {
-          trace::Ray &r = result.new_ray(*lr);
+          trace::Ray &r = result.new_ray(lr);
 
           r.set_creator(this);
           r.set_material(m);

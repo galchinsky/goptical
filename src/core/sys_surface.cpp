@@ -68,12 +68,9 @@ namespace _goptical {
                               const trace::Distribution &d,
                               bool unobstructed) const
     {
-        DPP_DELEGATE2_OBJ(de, void, (const math::Vector2 &v2d),
-                          const math::Vector3::put_delegate_t &, f, // _0
-                          const const_ref<curve::Base> &, _curve,    // _1
-        {
-          _0(math::Vector3(v2d, _1->sagitta(v2d)));
-        });
+        auto de = [&](const math::Vector2 &v2d) {
+          f(math::Vector3(v2d, _curve->sagitta(v2d)));
+        };
 
       // get distribution from shape
       _shape->get_pattern(de, d, unobstructed);
@@ -159,10 +156,10 @@ namespace _goptical {
     {
       const trace::Params &params = result.get_params();
 
-      GOPTICAL_FOREACH(i, *input)
+      for(auto& i : *input)
         {
           math::VectorPair3 pt;
-          trace::Ray  &ray = **i;
+          trace::Ray  &ray = *i;
 
           const math::Transform<3> &t = ray.get_creator()->get_transform_to(*this);
           math::VectorPair3 local(t.transform_line(ray));
@@ -218,20 +215,20 @@ namespace _goptical {
       io::Rgb color = get_color(r);
 
       std::vector<math::Triangle<2> >   mesh;
-      delegate_push<typeof(mesh)>       mesh_push(mesh);
-      _shape->get_triangles(mesh_push, r.get_feature_size());
+      _shape->get_triangles([&](const math::Triangle<2>& in){ mesh.push_back(in); }, 
+                            r.get_feature_size());
 
       const math::Transform<3> &tr = get_global_transform();
 
-      GOPTICAL_FOREACH(t, mesh)
+      for (auto& t : mesh)
         {
           math::Triangle<3> pts, nrm;
 
           for (unsigned int i = 0; i < 3; i++)
             {
-              pts[i].x() = (*t)[i].x();
-              pts[i].y() = (*t)[i].y();
-              pts[i].z() = _curve->sagitta((*t)[i]);
+              pts[i].x() = t[i].x();
+              pts[i].y() = t[i].y();
+              pts[i].z() = _curve->sagitta(t[i]);
 
               _curve->normal(nrm[i], pts[i]);
 

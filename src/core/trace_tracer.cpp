@@ -136,12 +136,11 @@ namespace _goptical {
 
       // FIXME avoid container use here
       std::vector<const sys::Source *> slist;
-      delegate_push<typeof(slist), const sys::Source &> d(slist);
-      _system->get_elements<sys::Source>(d);
+      _system->get_elements<sys::Source>([&](const sys::Source& elem) { slist.push_back(&elem); });
 
-      GOPTICAL_FOREACH(s, slist)
+      for (auto &s : slist)
         {
-          const sys::Source &source = **s;
+          const sys::Source &source = *s;
 
           if (_system != source.get_system())
             throw Error("can not trace with Source which is not part of the system");
@@ -171,9 +170,9 @@ namespace _goptical {
           rays_queue_t gqueue;
           result._generated_queue = &gqueue;
 
-          GOPTICAL_FOREACH(r, source_rays)
+          for (auto&r : source_rays)
             {
-              Ray *ray = *r;
+              Ray *ray = r;
               unsigned int bounce = _params._max_bounce;
 
               // trace relfected/refracted ray further

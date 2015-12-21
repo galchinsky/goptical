@@ -56,27 +56,27 @@ namespace _goptical {
 
     void Result::clear_save_states()
     {
-      GOPTICAL_FOREACH(i, _elements)
+      for (auto&i : _elements)
         {
-          i->_save_intercepted_list = false;
-          i->_save_generated_list = false;
+          i._save_intercepted_list = false;
+          i._save_generated_list = false;
         }
     }
 
     void Result::clear()
     {
-      GOPTICAL_FOREACH(i, _elements)
+      for (auto&i : _elements)
         {
-          if (i->_intercepted)
+          if (i._intercepted)
             {
-              delete i->_intercepted;
-              i->_intercepted = 0;
+              delete i._intercepted;
+              i._intercepted = 0;
             }
 
-          if (i->_generated)
+          if (i._generated)
             {
-              delete i->_generated;
-              i->_generated = 0;
+              delete i._generated;
+              i._generated = 0;
             }
         }
 
@@ -91,13 +91,13 @@ namespace _goptical {
     {
       clear();
 
-      GOPTICAL_FOREACH(i, _elements)
+      for (auto&i : _elements)
         {
-          if (i->_save_intercepted_list)
-            i->_intercepted = new rays_queue_t;
+          if (i._save_intercepted_list)
+            i._intercepted = new rays_queue_t;
 
-          if (i->_save_generated_list)
-            i->_generated = new rays_queue_t;
+          if (i._save_generated_list)
+            i._generated = new rays_queue_t;
         }
     }
 
@@ -156,9 +156,9 @@ namespace _goptical {
       const math::Vector3 &first = (*intercepts.begin())->get_intercept_point();
       math::VectorPair3 window(first, first);
 
-      GOPTICAL_FOREACH(i, intercepts)
+      for (auto&i : intercepts)
         {
-          const math::Vector3 &ip = (*i)->get_intercept_point();
+          const math::Vector3 &ip = i->get_intercept_point();
 
           if (window[0].x() > ip.x())
             window[0].x() = ip.x();
@@ -195,9 +195,9 @@ namespace _goptical {
       if (intercepts.empty())
         throw Error("no ray intercepts found on the surface");
       
-      GOPTICAL_FOREACH(i, intercepts)
+      for (auto&i : intercepts)
         {
-          center += (*i)->get_intercept_point();
+          center += i->get_intercept_point();
           count++;
         }
 
@@ -210,9 +210,9 @@ namespace _goptical {
     {
       double res = 0;
 
-      GOPTICAL_FOREACH(r, _rays)
+      for (auto&r : _rays)
         {
-          double i = r->get_intensity();
+          double i = r.get_intensity();
 
           if (i > res)
             res = i;

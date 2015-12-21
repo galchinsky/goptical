@@ -54,8 +54,8 @@ namespace _goptical {
     {
       double z = 0;
 
-      GOPTICAL_FOREACH(c, _list)
-        z += c->_curve->sagitta(c->_inv_transform.transform(xy)) * c->_z_scale + c->_z_offset;
+      for(auto& c : _list)
+        z += c._curve->sagitta(c._inv_transform.transform(xy)) * c._z_scale + c._z_offset;
 
       return z;
     }
@@ -64,13 +64,13 @@ namespace _goptical {
     {
       dxdy.set(0.0);
 
-      GOPTICAL_FOREACH(c, _list)
+      for (auto&c : _list)
         {
           math::Vector2 dtmp;
 
-          c->_curve->derivative(c->_inv_transform.transform(xy), dtmp);
+          c._curve->derivative(c._inv_transform.transform(xy), dtmp);
 
-          dxdy += c->_transform.transform_linear(dtmp) * c->_z_scale;
+          dxdy += c._transform.transform_linear(dtmp) * c._z_scale;
         }
     }
 

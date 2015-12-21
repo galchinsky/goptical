@@ -54,8 +54,9 @@ namespace _goptical {
       Element::system_register(s);
 
       // register all children elements
-      GOPTICAL_FOREACH(i, get_element_list())
-        (*i)->system_register(s);
+      for (auto&i : get_element_list()) {
+          i->system_register(s);
+      }
     }
 
     void Group::system_unregister()
@@ -63,16 +64,18 @@ namespace _goptical {
       assert(_system);
 
       // unregister all children elements
-      GOPTICAL_FOREACH(i, get_element_list())
-        (*i)->system_unregister();
+      for (auto&i : get_element_list()) {
+          i->system_unregister();
+      }
 
       Element::system_unregister();
     }
 
     void Group::system_moved()
     {
-      GOPTICAL_FOREACH(i, get_element_list())
-        (*i)->system_moved();
+      for (auto&i : get_element_list()) {
+        i->system_moved();
+      }
 
       Element::system_moved();
     }
@@ -84,14 +87,16 @@ namespace _goptical {
 
     void Group::draw_2d_e(io::Renderer &r, const Element *ref) const
     {
-      GOPTICAL_FOREACH(i, get_element_list())
-        r.draw_element_2d(**i, ref);
+      for (auto&i : get_element_list()) {
+        r.draw_element_2d(*i, ref);
+      }
     }
 
     void Group::draw_3d_e(io::Renderer &r, const Element *ref) const
     {
-      GOPTICAL_FOREACH(i, get_element_list())
-        r.draw_element_3d(**i, ref);
+      for (auto&i : get_element_list()) {
+          r.draw_element_3d(*i, ref);
+      }
     }
 
   }

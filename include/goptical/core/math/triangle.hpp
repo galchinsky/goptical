@@ -71,7 +71,7 @@ namespace _goptical {
 
     template <int N> struct Triangle : public TriangleBase<N>
     {
-      typedef delegate<void (const math::Triangle<N> &)> put_delegate_t;
+      typedef std::function<void (const math::Triangle<N> &)> put_delegate_t;
 
       inline Triangle<N>();
 
@@ -88,7 +88,7 @@ namespace _goptical {
      */
     template <> struct Triangle<3> : public TriangleBase<3>
     {
-      typedef delegate<void (const math::Triangle<3> &)> put_delegate_t;
+      typedef std::function<void (const math::Triangle<3> &)> put_delegate_t;
 
       inline Triangle<3>();
 

@@ -31,16 +31,16 @@ namespace _goptical {
 
     template <class X> X* Container::find() const
     {
-      GOPTICAL_FOREACH(i, _list)
+      for(auto& i : _list)
         {
           X *e;
 
-          if ((e = dynamic_cast<X*>(i->ptr())))
+          if ((e = dynamic_cast<X*>(i.ptr())))
             return e;
 
           Container *g;
 
-          if ((g = dynamic_cast<Container*>(i->ptr())) &&
+          if ((g = dynamic_cast<Container*>(i.ptr())) &&
               (e = g->find<X>()))
             return e;
         }
@@ -49,26 +49,26 @@ namespace _goptical {
     }
 
     template <class X>
-    inline void Container::get_elements(const delegate<void (const X &)> &d) const
+    inline void Container::get_elements(const std::function<void (const X &)> &d) const
     {
-      GOPTICAL_FOREACH(i, _list)
+      for(auto& i : _list)
         {
           X     *e;
 
-          if ((e = dynamic_cast<X*>(i->ptr())))
+          if ((e = dynamic_cast<X*>(i.ptr())))
             d(*e);
 
           Container *g;
 
-          if ((g = dynamic_cast<Container*>(i->ptr())))
+          if ((g = dynamic_cast<Container*>(i.ptr())))
             g->get_elements<X>(d);
         }
     }
 
     template <class X>
-    inline void Container::get_elements(const delegate<void (X &)> &d)
+    inline void Container::get_elements(const std::function<void (X &)> &d)
     {
-      GOPTICAL_FOREACH(i, _list)
+      for(auto* i : _list)
         {
           X     *e;
 
@@ -85,16 +85,16 @@ namespace _goptical {
     template <class X>
     inline void Container::enable_single(const X &e_)
     {
-      GOPTICAL_FOREACH(i, _list)
+      for(auto& i : _list)
         {
           X     *e;
 
-          if ((e = dynamic_cast<X*>(i->ptr())))
+          if ((e = dynamic_cast<X*>(i.ptr())))
             e->set_enable_state(e == &e_);
 
           Container *g;
 
-          if ((g = dynamic_cast<Container*>(i->ptr())))
+          if ((g = dynamic_cast<Container*>(i.ptr())))
             g->enable_single<X>(e_);
         }
     }

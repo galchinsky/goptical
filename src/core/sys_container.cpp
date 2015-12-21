@@ -44,8 +44,9 @@ namespace _goptical {
     Container::~Container()
     {
       // all container elements become orphan
-      GOPTICAL_FOREACH(i, _list)
-        (*i)->_container = 0;
+      for (auto&i : _list) {
+        i->_container = 0;
+      }
     }
 
     void Container::remove_all()
@@ -95,14 +96,14 @@ namespace _goptical {
       math::Vector3 a(std::numeric_limits<double>::max());
       math::Vector3 b(-std::numeric_limits<double>::max());
 
-      GOPTICAL_FOREACH(i, get_element_list())
+      for (auto&i : get_element_list())
         {
-          math::VectorPair3 bi = (*i)->get_bounding_box();
+          math::VectorPair3 bi = i->get_bounding_box();
 
           if (bi[0] == bi[1])
             continue;
 
-          bi = (*i)->get_transform().transform_pair(bi);
+          bi = i->get_transform().transform_pair(bi);
 
           for (unsigned int j = 0; j < 3; j++)
             {
@@ -141,8 +142,9 @@ namespace _goptical {
       if (const Element *e = dynamic_cast<const Element*>(this))
         return r.draw_element_2d(*e, e);
 
-      GOPTICAL_FOREACH(i, get_element_list())
-        r.draw_element_2d(**i, 0);
+      for (auto&i : get_element_list()) {
+        r.draw_element_2d(*i, 0);
+      }
     }
 
     void Container::draw_3d_fit(io::RendererViewport &r, double z_offset) const
@@ -171,15 +173,16 @@ namespace _goptical {
       if (const Element *e = dynamic_cast<const Element*>(this))
         return r.draw_element_3d(*e, e);
 
-      GOPTICAL_FOREACH(i, get_element_list())
-        r.draw_element_3d(**i, 0);
+      for (auto&i : get_element_list()) {
+        r.draw_element_3d(*i, 0);
+      }
     }
 
     std::ostream & operator<<(std::ostream &o, const Container &c)
     {
-      GOPTICAL_FOREACH(i, c._list)
-        o << "  " << **i << std::endl;
-
+      for (auto&i : c._list) {
+        o << "  " << *i << std::endl;
+      }
       return o;
     }
 

@@ -61,8 +61,8 @@ namespace _goptical {
       friend std::ostream & operator<<(std::ostream &o, const Element &e);
 
     public:
-      typedef delegate<void (const Element &)> put_delegate_t;
-      typedef delegate<void (Element &)> mod_delegate_t;
+      typedef std::function<void (const Element &)> put_delegate_t;
+      typedef std::function<void (Element &)> mod_delegate_t;
 
       /** Create a new optical element with given position and
           direction in parent coordinates system. */

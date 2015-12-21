@@ -79,9 +79,9 @@ namespace _goptical {
       math::range_t r(std::numeric_limits<double>::max(),
                       std::numeric_limits<double>::min());
 
-      GOPTICAL_FOREACH(i, _plots)
+      for(auto& i : _plots)
         {
-          math::range_t ri = i->get_set().get_x_range(dimension);
+          math::range_t ri = i.get_set().get_x_range(dimension);
 
           if (ri.first < r.first)
             r.first = ri.first;
@@ -98,9 +98,9 @@ namespace _goptical {
       math::range_t r(std::numeric_limits<double>::max(),
                       std::numeric_limits<double>::min());
 
-      GOPTICAL_FOREACH(i, _plots)
+      for (auto& i : _plots)
         {
-          math::range_t ri = i->get_set().get_y_range();
+          math::range_t ri = i.get_set().get_y_range();
 
           if (ri.first < r.first)
             r.first = ri.first;
@@ -116,9 +116,9 @@ namespace _goptical {
     {
       unsigned int dimension = 0;
 
-      GOPTICAL_FOREACH(i, _plots)
+      for (auto& i : _plots)
         {
-          unsigned int d = i->get_set().get_dimensions();
+          unsigned int d = i.get_set().get_dimensions();
 
           if (dimension == 0)
             dimension = d;
@@ -132,8 +132,8 @@ namespace _goptical {
 
     void Plot::set_color(const io::Rgb & color)
     {
-      GOPTICAL_FOREACH(i, _plots)
-        i->set_color(color);
+      for (auto& i : _plots)
+        i.set_color(color);
     }
 
     void Plot::set_different_colors()
@@ -141,21 +141,21 @@ namespace _goptical {
       io::Rgb color;
       unsigned int n = 1;
 
-      GOPTICAL_FOREACH(i, _plots)
+      for (auto& i : _plots)
         {
           color.r = (double)((n >> 0) & 0x01);
           color.g = (double)((n >> 1) & 0x01);
           color.b = (double)((n >> 2) & 0x01);
 
-          i->set_color(color);
+          i.set_color(color);
           n++;
         }
     }
 
     void Plot::set_style(PlotStyleMask style)
     {
-      GOPTICAL_FOREACH(i, _plots)
-        i->set_style(style);
+      for (auto& i : _plots)
+        i.set_style(style);
     }
 
     void Plot::fit_axes_range()

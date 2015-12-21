@@ -37,10 +37,10 @@
 #include <map>
 #include <vector>
 #include <deque>
+#include <functional>
 
 #include "goptical/core/vector_pool" /* mkdoc:skip */
 #include "goptical/core/ref"    /* mkdoc:skip */
-#include "goptical/core/delegate"       /* mkdoc:skip */
 #include "goptical/core/fstring"        /* mkdoc:skip */
 #include "goptical/core/vlarray"        /* mkdoc:skip */
 
@@ -49,10 +49,6 @@
 #define PATH_SEPARATOR '/'
 
 #define GOPTICAL_REFNEW(...) DPP_REFNEW(__VA_ARGS__)
-
-  /** Iterate over a stl container */
-#define GOPTICAL_FOREACH(var, cont)                                     \
-  for (typeof((cont).begin()) var = (cont).begin(); var !=(cont).end(); ++var)
 
 #ifdef CONFIG_GOPTICAL_DEBUG
 # define GOPTICAL_DEBUG(s) std::cerr << s << std::endl
