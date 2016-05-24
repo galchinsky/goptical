@@ -90,7 +90,7 @@ namespace _goptical {
 
           Result::element_result_s &er = result.get_element_result(*element);
 
-          generated = er._generated ? er._generated : &tmp[swaped];
+          generated = er._generated ? er._generated.get() : &tmp[swaped];
           result._generated_queue = generated;
           generated->clear();
 

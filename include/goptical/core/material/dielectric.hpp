@@ -157,6 +157,9 @@ namespace _goptical {
 
       /** medium used during refractive index measurement */
       const_ref<Base> _measurement_medium;
+
+      mutable double _last_wavelen;
+      mutable double _last_get_refractive_index;
     };
 
   }

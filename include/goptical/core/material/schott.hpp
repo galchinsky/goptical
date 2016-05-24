@@ -75,6 +75,9 @@ namespace _goptical {
 
       std::vector<double> _coeff;
       int _first;
+      mutable double _last_wavelen;
+      mutable double _last_wavelen_val;
+      
     };
 
   }

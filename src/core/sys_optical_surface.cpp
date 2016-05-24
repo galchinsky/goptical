@@ -128,8 +128,8 @@ namespace _goptical {
       const material::Base *next_mat = _mat[!right_to_left].ptr();
 
       // check ray didn't "escaped" from its material
-      std::cout << prev_mat->name << " " << next_mat->name <<
-                " " << incident.get_material()->name << std::endl;
+      //std::cout << prev_mat->name << " " << next_mat->name <<
+      //          " " << incident.get_material()->name << std::endl;
 
       if (prev_mat != incident.get_material()) {
         return;

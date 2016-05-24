@@ -28,6 +28,7 @@
 
 #include <set>
 #include <deque>
+#include <memory>
 
 #include "goptical/core/common.hpp"
 
@@ -81,6 +82,8 @@ namespace _goptical {
       math::Vector3 get_intercepted_center(const sys::Surface &s) const;
       /** Get centroid of all ray intercepted on a surface */
       math::Vector3 get_intercepted_centroid(const sys::Surface &s) const;
+
+      std::vector<std::vector<double> > pixelate(const sys::Surface &s) const;
 
       /** Clear all result data */
       void clear();
@@ -143,8 +146,10 @@ namespace _goptical {
 
       struct element_result_s
       {
-        rays_queue_t *_intercepted; // list of rays for each intercepted surfaces
-        rays_queue_t *_generated; // list of rays for each generator surfaces
+        std::shared_ptr<rays_queue_t> 
+            _intercepted; // list of rays for each intercepted surfaces
+        std::shared_ptr<rays_queue_t> 
+            _generated; // list of rays for each generator surfaces
         bool _save_intercepted_list;
         bool _save_generated_list;
       };
@@ -152,7 +157,7 @@ namespace _goptical {
       inline struct element_result_s & get_element_result(const sys::Element &e);
       inline const struct element_result_s & get_element_result(const sys::Element &e) const;
 
-      vector_pool<Ray, 256> _rays; // rays allocation pool
+      vector_pool<Ray, 1024> _rays; // rays allocation pool
       std::vector<struct element_result_s> _elements;
       std::set<double>          _wavelengths;
       rays_queue_t              *_generated_queue;

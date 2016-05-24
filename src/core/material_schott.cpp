@@ -24,6 +24,8 @@
 
 #include <goptical/core/material/Schott>
 
+#include <iostream>
+
 namespace _goptical {
 
   namespace material {
@@ -58,10 +60,17 @@ namespace _goptical {
 
       _coeff.resize(c / 2 + 1, 0.0);
       _first = first;
+
+      _last_wavelen = 0;
+      _last_wavelen_val = 0;
     }
 
     double Schott::get_measurement_index(double wavelen) const
     {
+      if (_last_wavelen == wavelen) {
+          return _last_wavelen_val;
+      }
+        
       double wl = wavelen / 1000.0;
       double n = 0;
       double x = (double)_first;
@@ -72,7 +81,10 @@ namespace _goptical {
           x += 2.0;
         }
 
-      return sqrt(n);
+      _last_wavelen = wavelen;
+      _last_wavelen_val = sqrt(n);
+
+      return _last_wavelen_val;
     }
 
   }

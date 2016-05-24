@@ -39,12 +39,14 @@
 #include <deque>
 #include <functional>
 
-#include "goptical/core/vector_pool" /* mkdoc:skip */
+#include "goptical/core/vector_pool"
 #include "goptical/core/ref"    /* mkdoc:skip */
 #include "goptical/core/fstring"        /* mkdoc:skip */
 #include "goptical/core/vlarray"        /* mkdoc:skip */
 
 #include <math.h>
+
+#include <limits>
 
 #define PATH_SEPARATOR '/'
 
@@ -460,6 +462,8 @@ namespace _goptical {
     {
       return x - trunc(x / n) * n;
     }
+
+    static double Inf = std::numeric_limits<double>::infinity();
   }
 
   /** @module {Core}

@@ -37,7 +37,8 @@ namespace _goptical {
         _temp_model(ThermalNone),
         _low_wavelen(350.0),
         _high_wavelen(750.0),
-        _measurement_medium(std_air)
+        _measurement_medium(std_air),
+        _last_wavelen(0)
     {
       _transmittance.set_interpolation(data::Cubic);
     }
@@ -89,6 +90,10 @@ namespace _goptical {
 
     double Dielectric::get_refractive_index(double wavelen) const
     {
+      if (wavelen == _last_wavelen) {
+          return _last_get_refractive_index;
+      }
+
       double a = _measurement_medium->get_refractive_index(wavelen);
       double m = get_measurement_index(wavelen);
 
@@ -111,6 +116,9 @@ namespace _goptical {
         case ThermalNone:
           ;
         }
+
+      _last_wavelen = wavelen;
+      _last_get_refractive_index = n;
 
       return n;
     }

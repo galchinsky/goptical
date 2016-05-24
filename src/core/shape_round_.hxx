@@ -98,16 +98,16 @@ namespace _goptical {
         } break;
 
         case trace::RandomDist: {
-
           if (!obstructed)
             f(math::Vector2(0, 0));
 
           const double bound = obstructed ? hr - epsilon : epsilon;
 
-          for (double r = tr; r > bound; r -= step)
+          double tr1 = tr / 20;
+          for (double r = tr1; r > bound; r -= step)
             {
               double astep = (M_PI / 3) / ceil(r / step);
-
+              // angle
               for (double a = 0; a < 2 * M_PI - epsilon; a += astep)
                 {
                   math::Vector2 v(sin(a) * r       + (drand48() - .5) * step,
@@ -118,7 +118,7 @@ namespace _goptical {
                 }
             }
 
-        } break;
+        }  break;
 
         case trace::DefaultDist:
         case trace::HexaPolarDist: {

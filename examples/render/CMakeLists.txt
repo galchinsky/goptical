@@ -8,8 +8,11 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 include_directories( ${OPENGL_INCLUDE_DIRS}  ${GLUT_INCLUDE_DIRS} )
 
+find_package( OpenCV REQUIRED )
+include_directories(${OpenCV_INCLUDE_DIRS})
+
 add_executable(${FNAME}_opengl ${SOURCES})
-target_link_libraries(${FNAME}_opengl ${PROJECT_NAME}_static ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+target_link_libraries(${FNAME}_opengl ${PROJECT_NAME}_static ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${OpenCV_LIBRARIES})
 
 set(SOURCES
   x11_app.cpp
@@ -18,4 +21,4 @@ find_package(X11 REQUIRED)
 include_directories( ${X11_INCLUDE_DIR} )
 
 add_executable(${FNAME}_x11 ${SOURCES})
-target_link_libraries(${FNAME}_x11 ${PROJECT_NAME}_static ${X11_LIBRARIES})
+target_link_libraries(${FNAME}_x11 ${PROJECT_NAME}_static ${X11_LIBRARIES} ${OpenCV_LIBRARIES})

@@ -78,6 +78,7 @@ set(MODULE_SOURCES
   sys_source.cpp
   sys_source_point.cpp
   sys_source_rays.cpp
+  sys_source_disk.cpp  
   sys_stop.cpp
   sys_surface.cpp
   sys_system.cpp

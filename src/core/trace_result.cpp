@@ -69,18 +69,17 @@ namespace _goptical {
         {
           if (i._intercepted)
             {
-              delete i._intercepted;
-              i._intercepted = 0;
+              i._intercepted = nullptr;
             }
 
           if (i._generated)
             {
-              delete i._generated;
-              i._generated = 0;
+              i._generated = nullptr;
             }
         }
 
-      _rays.clear();
+      _rays.clear();// = vector_pool<Ray, 256>();
+      _rays.shrink();
       _sources.clear();
       _wavelengths.clear();
 
@@ -94,10 +93,10 @@ namespace _goptical {
       for (auto&i : _elements)
         {
           if (i._save_intercepted_list)
-            i._intercepted = new rays_queue_t;
+            i._intercepted = std::make_shared<rays_queue_t>();
 
           if (i._save_generated_list)
-            i._generated = new rays_queue_t;
+            i._generated = std::make_shared<rays_queue_t>();
         }
     }
 
@@ -178,6 +177,48 @@ namespace _goptical {
 
       return window;
     }
+
+    std::vector<std::vector<double> > Result::pixelate(const sys::Surface &s) const
+    {
+      const rays_queue_t & intercepts = get_intercepted(s);
+
+      if (intercepts.empty())
+        throw Error("no ray intercepts found on the surface");
+
+//      math::VectorPair3 window = get_intercepted_window(s);
+      const auto& shape = s.get_shape();
+      const auto& window = s.get_bounding_box();
+
+      auto result = std::vector< std::vector<double> >(1024, std::vector<double>(1024, 0) );
+
+      for (auto&i : intercepts)
+        {
+          const math::Vector3 &ip = i->get_intercept_point();
+          math::Vector3 d = (ip - window[0]) / (window[1] - window[0]) * 1024.0;
+
+          if (d[0] < 0) {
+              d[0] = 0;
+          }
+          if (d[0] > 1023) {
+              d[0] = 1023;
+          }
+          if (d[1] < 0) {
+              d[1] = 0;
+          }
+          if (d[1] > 1023) {
+              d[1] = 1023;
+          }
+
+          const double intensity = i->get_intercept_intensity();
+
+          result[d[0]][d[1]] += intensity;
+          
+          
+        }
+
+      return result;
+    }
+
 
     math::Vector3 Result::get_intercepted_center(const sys::Surface &s) const
     {

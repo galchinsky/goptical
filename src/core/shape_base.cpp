@@ -108,7 +108,7 @@ namespace _goptical {
               double ybound = sqrt(math::square(tr) - math::square(x));
 
               for (y = -ybound; y < ybound; y += step)
-                {
+              {
                   ADD_PATTERN_POINT(math::Vector2(x + (drand48() - .5) * step,
                                                     y + (drand48() - .5) * step));
                 }

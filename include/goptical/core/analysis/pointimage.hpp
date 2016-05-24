@@ -39,7 +39,7 @@ namespace _goptical
 
     /**
        @short Point image analysis base class
-       @header <goptical/core/analysis/PointImage
+       @header goptical/core/analysis/PointImage
        @module {Core}
        @internal
     */

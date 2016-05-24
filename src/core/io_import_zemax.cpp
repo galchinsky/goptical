@@ -38,6 +38,7 @@
 #include <goptical/core/curve/Parabola>
 
 #include <goptical/core/sys/System>
+#include <goptical/core/sys/Stop>
 #include <goptical/core/sys/Image>
 #include <goptical/core/sys/Surface>
 #include <goptical/core/sys/OpticalSurface>
@@ -120,6 +121,8 @@ namespace _goptical {
     {
       enum zemax_surface_e type;
 
+      bool stop;
+
       enum zemax_aperture_e ap_type;
       double ap_params[4];
       bool ap_obscuration;
@@ -138,6 +141,7 @@ namespace _goptical {
 
       inline zemax_surface_s()
         : type(zs_none),
+          stop(false),
           ap_type(za_none),
           ap_obscuration(false),
           ap_decenter(false),
@@ -357,7 +361,10 @@ namespace _goptical {
                     {
                       ////////////////////////////////////////////////////
                       // Surface type
-
+                    case ZMX_TYPE('S', 'T', 'O', 'P'): {
+                        surface.stop = true;
+                        break;
+                    }
                     case ZMX_TYPE('T', 'Y', 'P', 'E'): {
 
                       if (surface.type != zs_none)
@@ -631,29 +638,32 @@ namespace _goptical {
 
           ref<sys::Element> element;
 
-          if (i == surf_array.size() - 1)
-            {
+          if (i == surf_array.size() - 1) {
               element = GOPTICAL_REFNEW(sys::Image, math::vector3_0, curve, shape);
-            }
-          else if (surf.gl_type == zg_air && surf_array[i-1].gl_type == zg_air)
-            {
+          }
+          else if (surf.stop == true) {
+              ref<sys::Stop> s = GOPTICAL_REFNEW(sys::Stop, math::vector3_0, shape);
+              
+              element = s;
+              std::cout << "@@@@@@" << std::endl;
+          }
+          else if (surf.gl_type == zg_air && surf_array[i-1].gl_type == zg_air) {
               ref<sys::Surface> s = GOPTICAL_REFNEW(sys::OpticalSurface, math::vector3_0, curve, shape,
                                                     material::none, material::none);
-
+              
               s->set_enable_state(false);
-
+              
               element = s;
-            }
-          else
-            {
+          }
+          else {
               const_ref<material::Base> mat = get_glass(*sys, surf);
-
+              
               element = GOPTICAL_REFNEW(sys::OpticalSurface, math::vector3_0,
                                         curve, shape, last_mat, mat);
-
+              
               if (surf.gl_type != zg_mirror)
-                last_mat = mat;
-            }
+                  last_mat = mat;
+          }
 
           element->set_transform(coord);
 
