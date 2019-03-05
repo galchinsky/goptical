@@ -32,7 +32,7 @@ After successfully creating the Makefiles, perform `make`:
 
 As a result, you should find lots of examples in the `examples` sub directory which can be executed and the plots can be inspected by using, e.g., `inkscape`.
 
-Usage:
+Usage
 =====
 
 Now the `goptical` library is available. To use it in your own programs it is necessary to provide directories for the include files, the library files, and
