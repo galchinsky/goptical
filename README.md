@@ -10,7 +10,7 @@ Compiling
 
 Tested for Linux Mint 18.3, but should also work for other Ubuntu-type Linux distributions:
 
-     $ sudo apt-get install libgsl-dev libgsl2 gsl-bin libgd3 libgd-tools libgd-dev libplplot-dev libplplot-c++11 freeglut3 freeglut3-dev libopencv-dev libdime-dev libxmu-dev libxmuu-dev
+     $ sudo apt-get install libgsl-dev libgsl2 gsl-bin libgd3 libgd-tools libgd-dev libplplot-dev libplplot-c++11 freeglut3 freeglut3-dev libopencv-dev libdime-dev libxmu-dev libxmuu-dev libopenblas-dev
 
 First, clone the github repo by:
 
@@ -31,6 +31,20 @@ After successfully creating the Makefiles, perform `make`:
      $ make
 
 As a result, you should find lots of examples in the `examples` sub directory which can be executed and the plots can be inspected by using, e.g., `inkscape`.
+
+Usage:
+=====
+
+Now the `goptical` library is available. To use it in your own programs it is necessary to provide directories for the include files, the library files, and
+to link several libraries within the final compilation step. Being in build directory of `goptical`, it is assumed that a file `example.cc` with an optical
+system is located directly below the `goptical` directory. Therefore `cd` there and build it via the following code:
+
+     $ cd ../..
+     $ g++ -std=c++11 -o example example.cc -Lgoptical/build/src/ -lgoptical_static -lgsl -lblas -lGL -lGLU -Igoptical/include/
+
+The `example` executable is linked with `goptical_static`, because it should be possible to provide it standalone without relying on `goptical`.
+
+TODO: what about cmake based larger projects?
 
 -----
  Copyright (C) 2010-2011 Free Software Foundation, Inc
